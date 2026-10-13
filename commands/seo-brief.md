@@ -5,10 +5,11 @@ argument-hint: "<mot-clé> [url de la page cible]"
 Lancez le skill `seo-brief` sur `$ARGUMENTS`.
 
 Collectez d'abord : SERP live et top 5 lu et mesuré (`serp_concurrents.py`,
-avec `--url` si la page existe ; sans DataForSEO, `firecrawl_search` +
-`firecrawl_scrape` passés au script par `--serp-firecrawl` et
-`--pages-json`), style du client (`memoire/style.md`), questions PAA,
-vocabulaire Reddit, volumes (DataForSEO ou Ubersuggest avec le `locId` du
+avec `--url` si la page existe ; dans une routine, les réponses du
+connecteur Ubersuggest passées par `--serp-json` et `--questions`, les pages
+illisibles relevées par `firecrawl_scrape` et passées par `--pages-json`),
+style du client (`memoire/style.md`), sources de l'AI Overview s'il est
+présent, vocabulaire Reddit, volumes (Ubersuggest avec le `locId` du
 pays), sitemap pour le maillage (`--sitemap`). Ne rédigez jamais un brief
 sans avoir regardé la SERP, et n'écrivez aucun chiffre qu'un appel n'a pas
 renvoyé (`n.d.` sinon).

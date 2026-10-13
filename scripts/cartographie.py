@@ -4,7 +4,7 @@
     python3 cartographie.py initialiser                     # Search Console 90 jours + sitemap + calendrier
     python3 cartographie.py initialiser --csv export.csv --sans-sitemap
     python3 cartographie.py mensuel --mois 2026-09          # → rapports/cartographie-2026-09.md
-    python3 cartographie.py mensuel --mois 2026-09 --volumes --prompts    # payant : DataForSEO, moteurs IA
+    python3 cartographie.py mensuel --mois 2026-09 --volumes --prompts    # quota Ubersuggest, moteurs IA payants
     python3 cartographie.py verifier                        # cannibalisation, prompts hors règles
     python3 cartographie.py exporter --notion-csv           # CSV prêt pour un import Notion
 
@@ -895,26 +895,29 @@ def fichiers_releves(racine: Path) -> list[Path]:
     return sorted({f for m in motifs for f in racine.glob(m)})
 
 
-def rafraichir_volumes(lignes: list[dict]) -> float:
-    """Volumes DataForSEO des mots-clés principaux, par langue. Renvoie le coût en $."""
+def rafraichir_volumes(lignes: list[dict], client=None) -> int:
+    """Volumes et KD Ubersuggest des mots-clés principaux, par langue. Renvoie le nombre de rapports."""
     import demande
-    cout = 0.0
+    client = client or demande.U.Client()
+    rapports = 0
     par_langue: dict[str, list[dict]] = {}
     for l in lignes:
         if l.get("mot_cle_principal"):
             par_langue.setdefault(l.get("langue") or langue_projet(), []).append(l)
     for langue, groupe in par_langue.items():
-        lieu, code = demande.lieu_et_langue(argparse.Namespace(pays=None, lieu=None, langue=langue))
-        mots = list(dict.fromkeys(normaliser_requete(l["mot_cle_principal"]) for l in groupe))[:1000]
-        res, c = demande.appel("keywords_data/google_ads/search_volume/live",
-                               [{"keywords": mots, "location_name": lieu, "language_code": code}])
-        cout += c
-        volumes = {normaliser_requete(r.get("keyword", "")): r.get("search_volume") or 0 for r in res}
+        _, loc, code = demande.marche(argparse.Namespace(pays=None, loc_id=None, langue=langue))
+        mesures = {}
+        for mot in dict.fromkeys(normaliser_requete(l["mot_cle_principal"]) for l in groupe):
+            r = client.appel("keyword_overview", {"keyword": mot, "language": code, "locId": loc})
+            rapports += 1
+            mesures[mot] = (r.get("search_volume") or 0, r.get("seo_difficulty"))
         for l in groupe:
-            v = volumes.get(normaliser_requete(l["mot_cle_principal"]))
-            if v is not None:
-                l["volume"] = str(v)
-    return cout
+            m = mesures.get(normaliser_requete(l["mot_cle_principal"]))
+            if m:
+                l["volume"] = str(m[0])
+                if m[1] is not None:
+                    l["kd"] = str(m[1])
+    return rapports
 
 
 def mesurer_prompts(lignes: list[dict], sortie: Path, moteurs_demandes: list[str] | None) -> int:
@@ -977,10 +980,10 @@ def cmd_mensuel(a) -> int:
 
     if a.volumes:
         try:
-            cout = rafraichir_volumes(carto)
+            n = rafraichir_volumes(carto)
             ecrire_csv(chemin, carto, entete)
-            print(f"  ✓ volumes rafraîchis · coût DataForSEO : {cout:.4f} $")
-        except Exception as exc:  # identifiants absents, API
+            print(f"  ✓ volumes rafraîchis · Ubersuggest : {n} rapport(s) du quota quotidien")
+        except Exception as exc:  # non connecté, quota épuisé, réseau
             print(f"  ! volumes non rafraîchis : {str(exc)[:120]}", file=sys.stderr)
     if a.prompts:
         mesurer_prompts(carto, racine / "donnees" / f"cartographie-ia-{mois}.csv",
@@ -1103,7 +1106,7 @@ def main() -> int:
     p.add_argument("--site")
     p.add_argument("--csv", help="export requête × page du mois, si l'API est indisponible")
     p.add_argument("--csv-precedent", help="même export pour le mois précédent")
-    p.add_argument("--volumes", action="store_true", help="rafraîchir les volumes par DataForSEO (payant)")
+    p.add_argument("--volumes", action="store_true", help="rafraîchir volumes et KD par Ubersuggest (un rapport par mot-clé)")
     p.add_argument("--prompts", action="store_true", help="interroger les moteurs IA sur les prompts (payant)")
     p.add_argument("--moteurs", default="", help="avec --prompts : ex. openai,gemini (défaut : ceux qui ont une clé)")
     p.add_argument("--releves", help="fichier de relevés share_of_model à utiliser (défaut : le plus récent)")

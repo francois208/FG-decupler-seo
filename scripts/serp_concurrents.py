@@ -3,43 +3,43 @@
 
     python3 serp_concurrents.py --mot "pompe à chaleur air eau" --langue fr
     python3 serp_concurrents.py --mot "expert comptable lyon" --url https://www.exemple.fr/expert-comptable-lyon/
-    python3 serp_concurrents.py --mot "…" --top 8 --repli-dataforseo --json
+    python3 serp_concurrents.py --mot "…" --top 8 --json
 
-1. SERP Google en direct (DataForSEO, top 10 organique, « Autres questions
-   posées » dépliées d'un niveau, AI Overview chargé même asynchrone,
-   recherches associées, features).
+1. SERP Google par Ubersuggest (serp_analysis : top organique avec autorité
+   et clics estimés, présence d'un AI Overview, d'« Autres questions posées »
+   et des autres blocs) et questions réelles de l'autocomplétion Google
+   (google_suggestions). Ubersuggest ne renvoie ni le texte ni les sources
+   de l'AI Overview, ni les questions PAA elles-mêmes : le rapport le dit.
 2. Lecture des N premières pages concurrentes (5 par défaut, la page du
    client exclue) : title, meta, plan H1-H3, listes, tableaux, mots, FAQ,
    schémas, images, liens, dates, ton (vous / tu, nous / je, longueur des
-   phrases). Une page qui ne se lit pas est notée et sautée ; avec
-   --repli-dataforseo, elle est relue par DataForSEO (on_page/content_parsing,
-   JavaScript exécuté — payant, coût affiché).
+   phrases). Une page qui ne se lit pas (rendue en JavaScript, bloquée) est
+   notée et sautée ; relevez-la avec Firecrawl et repassez-la par --pages-json.
 3. Agrégation : longueur médiane et 3e quartile (la fourchette cible),
-   sujets de H2 récurrents d'une page à l'autre, questions PAA et celles que
-   le top ne traite dans aucun titre, sources citées par l'AI Overview,
-   termes présents sur au moins la moitié du top.
+   sujets de H2 récurrents d'une page à l'autre, questions et celles que le
+   top ne traite dans aucun titre, termes présents sur au moins la moitié du
+   top.
 4. Avec --url (ou projet.domaine) : la page du client lue de la même façon,
    et ce qui lui manque face au top — sujets, termes, questions, longueur.
 
-Sans DataForSEO (repli documenté dans `seo-brief`) : la SERP vient d'une
-recherche Firecrawl enregistrée (--serp-firecrawl, top organique seulement :
-ni PAA ni AI Overview, notés « non mesurés »), les questions d'un fichier
-(--questions : PAA relevées à la main, Ubersuggest, Search Console) et les
-pages d'un relevé Firecrawl déjà fait (--pages-json : url + html ou
-markdown). Avec --sitemap, les pages du site du client les plus proches du
-sujet sortent comme candidates au maillage interne.
+Hors connexion directe (routine cloud, où le connecteur Ubersuggest fait les
+appels) : la réponse de serp_analysis enregistrée (--serp-json), celle de
+google_suggestions ou un fichier de questions (--questions), et les pages
+d'un relevé Firecrawl (--pages-json : url + html ou markdown). Une recherche
+Firecrawl (--serp-firecrawl) sert de dernier repli : top organique seulement.
+Avec --sitemap, les pages du site du client les plus proches du sujet sortent
+comme candidates au maillage interne.
 
-    python3 serp_concurrents.py --mot "audit geo" --serp-firecrawl serp.json \
-        --pages-json pages.json --questions paa.txt --sitemap https://exemple.fr/sitemap.xml
+    python3 serp_concurrents.py --mot "audit geo" --serp-json serp.json \
+        --pages-json pages.json --questions suggestions.json --sitemap https://exemple.fr/sitemap.xml
 
 Écrit recherche/serp-<slug>-<date>.md (le rapport) et
 recherche/serp-<slug>-<date>-contenus.md (le contenu structuré de chaque
 concurrent, titres et listes conservés, à lire avant d'écrire le brief).
 --json imprime le rapport complet sur la sortie standard.
 
-Coût : ~0,002 $ la SERP (+0,002 $ si un AI Overview asynchrone est chargé,
-+0,00015 $ par question dépliée). La lecture des pages est gratuite ; le
-repli DataForSEO est facturé à la page. Sans dépendance.
+Coût : deux rapports du quota quotidien Ubersuggest (la SERP, les
+questions). La lecture des pages est gratuite. Sans dépendance.
 """
 
 from __future__ import annotations
@@ -75,54 +75,36 @@ def domaine(url: str) -> str:
     return h[4:] if h.startswith("www.") else h
 
 
-def _references(objet) -> list[dict]:
-    refs = []
-    if isinstance(objet, dict):
-        for r in objet.get("references") or []:
-            if isinstance(r, dict) and r.get("url"):
-                refs.append({"domaine": domaine(r["url"]) or r.get("domain"), "url": r["url"],
-                             "titre": r.get("title") or r.get("source") or ""})
-        for v in objet.get("items") or []:
-            refs += _references(v)
-    return refs
+def lire_serp(brut) -> dict:
+    """La réponse de serp_analysis (Ubersuggest) réduite à ce que le brief utilise.
 
-
-def lire_serp(resultats: list[dict]) -> dict:
-    """La réponse de serp/google/organic/live/advanced, réduite à ce que le brief utilise."""
-    organique, questions, associees, features = [], [], [], set()
-    aio = {"present": False, "sources": [], "extrait": ""}
-    extrait_position0 = None
-    for r in resultats or []:
-        features.update(r.get("item_types") or [])
-        for it in r.get("items") or []:
-            t = it.get("type")
-            if t == "organic":
-                organique.append({"rang": it.get("rank_group"), "url": it.get("url"),
-                                  "domaine": domaine(it.get("url")) or it.get("domain"),
-                                  "titre": it.get("title") or "", "description": it.get("description") or ""})
-            elif t == "people_also_ask":
-                questions += [q.get("title") for q in it.get("items") or [] if q.get("title")]
-            elif t in ("related_searches", "people_also_search"):
-                associees += [x if isinstance(x, str) else x.get("title", "") for x in it.get("items") or []]
-            elif t == "ai_overview":
-                aio["present"] = True
-                aio["sources"] += _references(it)
-                texte = it.get("markdown") or " ".join(x.get("markdown") or x.get("text") or ""
-                                                       for x in it.get("items") or [] if isinstance(x, dict))
-                aio["extrait"] = aio["extrait"] or re.sub(r"\s+", " ", texte).strip()[:900]
-            elif t == "featured_snippet" and not extrait_position0:
-                extrait_position0 = {"url": it.get("url"), "domaine": domaine(it.get("url")) or it.get("domain"),
-                                     "titre": it.get("title") or "", "description": it.get("description") or ""}
-    vus, sources = set(), []
-    for s in aio["sources"]:
-        if s["url"] not in vus:
-            vus.add(s["url"])
-            sources.append(s)
-    aio["sources"] = sources
-    aio["mesure"] = True
-    return {"source": "DataForSEO", "organique": organique, "questions": list(dict.fromkeys(questions)),
-            "recherches_associees": [a for a in dict.fromkeys(associees) if a],
-            "ai_overview": aio, "extrait_optimise": extrait_position0, "features": sorted(features)}
+    Ubersuggest dit quels blocs la SERP affiche (AI Overview, « Autres questions
+    posées », images…) sans en renvoyer le contenu : les sources de l'AI Overview
+    sont « non renvoyées » (sources_mesurees faux), pas absentes. Les questions
+    viennent de google_suggestions (questions_autocompletion).
+    """
+    entrees = (brut.get("serpEntries") or []) if isinstance(brut, dict) else []
+    organique, features, extrait_position0 = [], [], None
+    for it in entrees:
+        t, url = it.get("type") or "", it.get("url") or ""
+        if t == "organic":
+            if url and all(o["url"] != url for o in organique):   # un même résultat peut revenir (liens annexes)
+                organique.append({"rang": len(organique) + 1, "position": it.get("position"), "url": url,
+                                  "domaine": domaine(url) or it.get("domain"), "titre": it.get("title") or "",
+                                  "description": "", "autorite": it.get("domainAuthority"),
+                                  "clics": it.get("clicks")})
+            continue
+        if t == "featured_snippet" and not extrait_position0 and it.get("domain") not in (None, "NODOMAIN"):
+            extrait_position0 = {"url": url, "domaine": domaine(url) or it.get("domain"),
+                                 "titre": it.get("title") or "", "description": ""}
+        if t and t not in features:
+            features.append(t)
+    return {"source": "Ubersuggest", "organique": organique, "questions": [], "source_questions": "",
+            "recherches_associees": [],
+            "ai_overview": {"present": "ai_overview" in features, "mesure": True, "sources_mesurees": False,
+                            "sources": [], "extrait": ""},
+            "paa_presentes": "people_also_ask" in features,
+            "extrait_optimise": extrait_position0, "features": features}
 
 
 def lire_serp_firecrawl(brut) -> dict:
@@ -140,12 +122,20 @@ def lire_serp_firecrawl(brut) -> dict:
                           "titre": it.get("title") or "", "description": it.get("description") or ""})
     organique.sort(key=lambda o: o["rang"])
     return {"source": "Firecrawl", "organique": organique, "questions": [], "recherches_associees": [],
-            "ai_overview": {"present": False, "mesure": False, "sources": [], "extrait": ""},
-            "extrait_optimise": None, "features": []}
+            "ai_overview": {"present": False, "mesure": False, "sources_mesurees": False, "sources": [], "extrait": ""},
+            "source_questions": "", "paa_presentes": None, "extrait_optimise": None, "features": []}
 
 
 def lire_questions(texte: str) -> list[str]:
-    """Une question par ligne ; lignes vides et commentaires (#) ignorés."""
+    """Une question par ligne (lignes vides et commentaires # ignorés), ou la réponse JSON de
+    google_suggestions (Ubersuggest), dont seul le groupe « questions » est gardé."""
+    try:
+        brut = json.loads(texte)
+    except ValueError:
+        brut = None
+    if isinstance(brut, dict):
+        import demande
+        return demande.questions_autocompletion(brut)
     return [l.strip().lstrip("-* ").strip() for l in (texte or "").splitlines()
             if l.strip() and not l.lstrip().startswith("#")]
 
@@ -321,7 +311,8 @@ def construire(mot: str, lieu: str, langue: str, serp: dict, pages: list[dict], 
     recurrents = [s for s in tous_sujets if s["pages"] >= 2]
     isoles = [s for s in tous_sujets if s["pages"] == 1]
     titres_top = [t for p in lues for _, t in p.get("plan") or []]
-    questions = [{"question": q, "source": "PAA", "traitee_par_le_top": couvert(q, titres_top, mot)}
+    origine = serp.get("source_questions") or "PAA"
+    questions = [{"question": q, "source": origine, "traitee_par_le_top": couvert(q, titres_top, mot)}
                  for q in serp["questions"]]
     for p in lues:
         for q in p.get("questions_titres") or []:
@@ -367,10 +358,10 @@ def construire(mot: str, lieu: str, langue: str, serp: dict, pages: list[dict], 
             "plan": client.get("plan"),
             "sujets_manquants": [s for s in recurrents if not any(proches(set(s["signature"]), signature(t, mot))
                                                                  for t in titres_client)],
-            "questions_non_traitees": [q["question"] for q in questions if q["source"] == "PAA"
+            "questions_non_traitees": [q["question"] for q in questions if q["source"] == origine
                                        and not couvert(q["question"], titres_client, mot)],
-            "cite_par_ai_overview": any(s["domaine"] == dom
-                                        for s in serp["ai_overview"]["sources"]),
+            "cite_par_ai_overview": any(s["domaine"] == dom for s in serp["ai_overview"]["sources"])
+            if serp["ai_overview"].get("sources_mesurees", True) else None,
             "faq": client.get("faq"), "tableaux": client.get("tableaux"), "schemas": client.get("schemas"),
             "ton": C.mesures_ton(client),
         }
@@ -391,7 +382,7 @@ def markdown(r: dict) -> str:
     s, lg, st = r["serp"], r["longueur"], r["structure"]
     aio = s["ai_overview"]
     L = [f"# SERP — « {r['mot']} »", "",
-         f"{r['lieu']} · {r['langue']} · relevé le {r['date']} · SERP {s.get('source', 'DataForSEO')} · "
+         f"{r['lieu']} · {r['langue']} · relevé le {r['date']} · SERP {s.get('source', 'Ubersuggest')} · "
          f"{st['pages_lues']} page(s) concurrente(s) lue(s)", "",
          "## Synthèse", "", "| Signal | Mesure |", "|---|---|",
          f"| Longueur du top (mots) | " + (f"médiane {lg['mediane']} · 3e quartile {lg['p75']} · "
@@ -400,7 +391,9 @@ def markdown(r: dict) -> str:
                                         else "**{0} à {1} mots**").format(*lg["fourchette"]) if lg else "n.d.") + " |",
          f"| AI Overview | " + ("non mesuré (SERP sans features)" if not aio.get("mesure", True)
                                  else ("oui" if aio["present"] else "non")
-                                 + (f" · {len(aio['sources'])} source(s) citée(s)" if aio["present"] else "")) + " |",
+                                 + ((f" · {len(aio['sources'])} source(s) citée(s)"
+                                     if aio.get("sources_mesurees", True) else " · sources non renvoyées")
+                                    if aio["present"] else "")) + " |",
          f"| Extrait optimisé (position 0) | "
          + (f"{s['extrait_optimise']['domaine']}" if s["extrait_optimise"]
             else "non" if aio.get("mesure", True) else "non mesuré") + " |",
@@ -452,18 +445,24 @@ def markdown(r: dict) -> str:
     L.append("")
 
     L += ["## Questions", ""]
+    if s.get("source_questions") == "autocomplétion":
+        L += ["Questions réelles de l'autocomplétion Google (Ubersuggest). Bloc « Autres questions posées » dans "
+              f"la SERP : {'oui' if s.get('paa_presentes') else 'non'} (son contenu n'est pas renvoyé).", ""]
     if r["questions"]:
         L += ["| Question | Source | Traitée dans un titre du top |", "|---|---|---|"]
         L += [f"| {_cellule(q['question'])} | {q['source']} | {'oui' if q['traitee_par_le_top'] else '**non**'} |"
               for q in r["questions"]]
     else:
-        L.append("Aucune question PAA ni titre interrogatif.")
+        L.append("Aucune question relevée ni titre interrogatif.")
     L.append("")
 
     L += ["## AI Overview", ""]
     if not aio.get("mesure", True):
         L.append("Non mesuré : la SERP vient d'une source sans features (Firecrawl). À relever à la main "
-                 "ou par DataForSEO avant d'écrire la section 3 du brief.")
+                 "ou par Ubersuggest (serp_analysis) avant d'écrire la section 3 du brief.")
+    elif aio["present"] and not aio.get("sources_mesurees", True):
+        L.append("Présent sur cette requête. Ubersuggest n'en renvoie ni le texte ni les sources : relevez-les "
+                 "dans le navigateur (Chrome DevTools) avant d'écrire la section 3 du brief.")
     elif aio["present"]:
         L += [f"> {aio['extrait']}" if aio["extrait"] else "> (contenu non renvoyé)", "", "Sources citées :", ""]
         L += [f"- {x['domaine']} — {x['titre'] or x['url']}" for x in aio["sources"]] or ["- aucune renvoyée"]
@@ -512,12 +511,13 @@ def markdown(r: dict) -> str:
               f"| Mots | {_cellule(c['mots'])} | médiane {lg['mediane'] if lg else 'n.d.'} |",
               f"| FAQ | {'oui' if c['faq'] else 'non'} | {st['avec_faq']}/{st['pages_lues']} |",
               f"| Tableaux | {_cellule(c['tableaux'])} | {st['avec_tableau']}/{st['pages_lues']} avec tableau |",
-              f"| Citée par l'AI Overview | {'oui' if c['cite_par_ai_overview'] else 'non'} | |",
+              f"| Citée par l'AI Overview | "
+              f"{'non mesuré' if c['cite_par_ai_overview'] is None else 'oui' if c['cite_par_ai_overview'] else 'non'} | |",
               f"| Adresse / personne | {c['ton']['adresse']} / {c['ton']['personne']} | "
               f"{_repartition(r['ton'].get('adresse', {})) if r['ton'] else 'n.d.'} |", ""]
         L += ["**Sujets récurrents absents de ses titres** :", ""]
         L += [f"- {x['sujet']} ({x['pages']} pages)" for x in c["sujets_manquants"]] or ["- aucun"]
-        L += ["", "**Questions PAA sans titre qui y réponde** :", ""]
+        L += ["", "**Questions sans titre qui y réponde** :", ""]
         L += [f"- {q}" for q in c["questions_non_traitees"]] or ["- aucune"]
         L += ["", "**Termes du top absents de la page** : "
               + (", ".join(f"{x['terme']} ({x['pages']})" for x in ch["absents_client"]) or "aucun"), ""]
@@ -552,18 +552,6 @@ def slug(texte: str) -> str:
 
 # ─── Réseau ───────────────────────────────────────────────────────
 
-def lire_dataforseo(url: str, langue: str) -> tuple[dict, float]:
-    """Repli payant : la page rendue par DataForSEO (JavaScript exécuté), en Markdown."""
-    res, cout = demande.appel("on_page/content_parsing/live",
-                              [{"url": url, "enable_javascript": True, "markdown_view": True,
-                                "accept_language": langue, "disable_cookie_popup": True}])
-    items = [it for r in res for it in (r.get("items") or [])]
-    md = next((it.get("page_as_markdown") for it in items if it.get("page_as_markdown")), "")
-    if not md:
-        raise C.PageIllisible("DataForSEO n'a rien rendu")
-    return C.lire_markdown(md, url), cout
-
-
 def lire_pages_json(brut) -> dict[str, dict]:
     """Pages déjà relevées (Firecrawl scrape, export d'outil) : liste de {url, html | markdown}, ou un
     dictionnaire {url: {html | markdown}}. La réponse brute de firecrawl_scrape (clé « data ») est acceptée."""
@@ -592,30 +580,21 @@ def lire_page_relevee(url: str, d: dict) -> dict:
     return page
 
 
-def lire_page(url: str, langue: str, repli: bool, relevees: dict | None = None) -> tuple[dict | None, str | None, float]:
-    """(page, raison de l'échec, coût). Ne lève jamais : une page illisible est une ligne du rapport."""
-    raison, cout = None, 0.0
+def lire_page(url: str, langue: str, relevees: dict | None = None) -> tuple[dict | None, str | None]:
+    """(page, raison de l'échec). Ne lève jamais : une page illisible est une ligne du rapport."""
     if relevees and url in relevees:
         page = lire_page_relevee(url, relevees[url])
         if page["mots"] >= MOTS_MINI:
-            return page, None, 0.0
-        return page, f"{page['mots']} mots dans le relevé fourni", 0.0
+            return page, None
+        return page, f"{page['mots']} mots dans le relevé fourni"
     try:
         html, finale = C.telecharger(url, langue=langue)
         page = C.lire_html(html, url)
         if page["mots"] >= MOTS_MINI:
-            return page, None, 0.0
-        raison = f"{page['mots']} mots lus (page rendue en JavaScript ou bloquée)"
+            return page, None
+        return page, f"{page['mots']} mots lus (page rendue en JavaScript ou bloquée : relevez-la avec Firecrawl)"
     except C.PageIllisible as exc:
-        page, raison = None, str(exc)
-    if repli:
-        try:
-            p2, cout = lire_dataforseo(url, langue)
-            if p2["mots"] >= (page or {}).get("mots", 0):
-                return p2, None, cout
-        except (C.PageIllisible, demande.ErreurAPI) as exc:
-            raison = f"{raison} ; repli DataForSEO : {exc}"
-    return page, raison, cout
+        return None, str(exc)
 
 
 def main() -> int:
@@ -624,42 +603,43 @@ def main() -> int:
     ap.add_argument("--mot", required=True, help="mot-clé")
     ap.add_argument("--langue", help="fr, en, ar…")
     ap.add_argument("--pays", help="code ISO, défaut : projet.pays_cible")
-    ap.add_argument("--lieu", help="nom de lieu DataForSEO, pour un pays hors liste")
+    ap.add_argument("--loc-id", type=int, help="locId Ubersuggest, pour un pays hors liste ou une ville")
     ap.add_argument("--top", type=int, default=5, help="pages concurrentes à lire (défaut 5, max 10)")
     ap.add_argument("--url", help="page du client à comparer (sinon : celle de projet.domaine si elle ranke)")
-    ap.add_argument("--repli-dataforseo", action="store_true",
-                    help="relire par DataForSEO les pages illisibles (payant)")
-    ap.add_argument("--serp-json", help="réponse SERP DataForSEO déjà enregistrée (évite de repayer l'appel)")
-    ap.add_argument("--serp-firecrawl", help="résultat d'une recherche Firecrawl enregistré (repli sans DataForSEO)")
-    ap.add_argument("--questions", help="fichier de questions (une par ligne) : PAA relevées ailleurs")
+    ap.add_argument("--serp-json", help="réponse de serp_analysis déjà enregistrée (connecteur Ubersuggest)")
+    ap.add_argument("--serp-firecrawl", help="résultat d'une recherche Firecrawl enregistré (dernier repli)")
+    ap.add_argument("--questions", help="questions : réponse de google_suggestions, ou une question par ligne")
     ap.add_argument("--pages-json", help="pages déjà relevées : [{url, html | markdown}] (ex. Firecrawl scrape)")
     ap.add_argument("--sitemap", help="sitemap du client (URL ou fichier) : candidates au maillage interne")
     ap.add_argument("--sortie", help="dossier de sortie, défaut : recherche/ du projet")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
 
-    lieu, langue = demande.lieu_et_langue(a)
-    cout = 0.0
+    lieu, loc, langue = demande.marche(a)
+    rapports = 0
     try:
         if a.serp_firecrawl:
-            resultats = None
+            serp = lire_serp_firecrawl(json.loads(Path(a.serp_firecrawl).read_text(encoding="utf-8")))
         elif a.serp_json:
-            brut = json.loads(Path(a.serp_json).read_text(encoding="utf-8"))
-            resultats = [r for t in brut.get("tasks", []) for r in t.get("result") or []] \
-                if isinstance(brut, dict) else brut
+            serp = lire_serp(json.loads(Path(a.serp_json).read_text(encoding="utf-8")))
         else:
-            resultats, cout = demande.appel("serp/google/organic/live/advanced", [{
-                "keyword": a.mot, "location_name": lieu, "language_code": langue, "device": "desktop",
-                "depth": 10, "people_also_ask_click_depth": 1, "load_async_ai_overview": True}])
-            print(f"  SERP : {cout:.4f} $", file=sys.stderr)
-    except demande.ErreurAPI as exc:
-        print(f"✗ DataForSEO : {exc}", file=sys.stderr)
+            client = demande.U.Client()
+            serp = lire_serp(client.appel("serp_analysis", {"keyword": a.mot, "language": langue, "locId": loc,
+                                                            "limit": 20}))
+            rapports += 1
+            if not a.questions:
+                pays = next((p for p, l in demande.U.LOC_IDS.items() if l == loc), "fr").lower()
+                serp["questions"] = demande.questions_autocompletion(client.appel("google_suggestions", {
+                    "keywords": [a.mot], "language": langue, "country": pays}))
+                serp["source_questions"] = "autocomplétion"
+                rapports += 1
+    except demande.ErreurUbersuggest as exc:
+        print(f"✗ Ubersuggest : {exc}", file=sys.stderr)
         return 1
-    serp = lire_serp_firecrawl(json.loads(Path(a.serp_firecrawl).read_text(encoding="utf-8"))) \
-        if a.serp_firecrawl else lire_serp(resultats)
     if a.questions:
-        serp["questions"] = list(dict.fromkeys(serp["questions"]
-                                               + lire_questions(Path(a.questions).read_text(encoding="utf-8"))))
+        texte = Path(a.questions).read_text(encoding="utf-8")
+        serp["questions"] = list(dict.fromkeys(serp["questions"] + lire_questions(texte)))
+        serp["source_questions"] = "autocomplétion" if texte.lstrip().startswith("{") else "PAA"
     relevees = lire_pages_json(json.loads(Path(a.pages_json).read_text(encoding="utf-8"))) if a.pages_json else {}
 
     dom_client = domaine(a.url) if a.url else domaine(lire_valeur("projet.domaine"))
@@ -669,10 +649,7 @@ def main() -> int:
 
     pages, echecs = [], []
     for o in cibles:
-        page, raison, c = lire_page(o["url"], langue, a.repli_dataforseo, relevees)
-        cout += c
-        if c:
-            print(f"  repli {o['domaine']} : {c:.4f} $", file=sys.stderr)
+        page, raison = lire_page(o["url"], langue, relevees)
         if page:
             page["rang"] = o["rang"]
             pages.append(page)
@@ -683,8 +660,7 @@ def main() -> int:
 
     client = None
     if url_client:
-        client, raison, c = lire_page(url_client, langue, a.repli_dataforseo, relevees)
-        cout += c
+        client, raison = lire_page(url_client, langue, relevees)
         if raison:
             print(f"  · page du client : {raison}", file=sys.stderr)
 
@@ -706,7 +682,7 @@ def main() -> int:
     base = f"serp-{slug(a.mot)}-{date}"
     (dossier / f"{base}.md").write_text(markdown(rapport), encoding="utf-8")
     (dossier / f"{base}-contenus.md").write_text(contenus(rapport, pages), encoding="utf-8")
-    rapport["cout_usd"] = round(cout, 4)
+    rapport["rapports_ubersuggest"] = rapports
 
     if a.json:
         print(json.dumps(rapport, ensure_ascii=False, indent=1))
@@ -720,7 +696,7 @@ def main() -> int:
               else "  fourchette cible : n.d.")
         print(f"  sujets récurrents : {len(rapport['sujets_recurrents'])} · questions : {len(rapport['questions'])}")
     print(f"  ✓ {dossier / (base + '.md')}", file=sys.stderr)
-    print(f"\n  coût DataForSEO : {cout:.4f} $\n", file=sys.stderr)
+    print(f"\n  Ubersuggest : {rapports} rapport(s) du quota quotidien\n", file=sys.stderr)
     return 0
 
 

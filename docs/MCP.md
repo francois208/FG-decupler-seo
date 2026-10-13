@@ -1,4 +1,4 @@
-# Brancher les 13 MCP
+# Brancher les MCP et les connecteurs
 
 Aucun n'est obligatoire. Les skills s'adaptent à ce qui est branché et vous
 disent ce qui manque. Commencez par le niveau 1 : c'est gratuit et ça couvre
@@ -114,27 +114,50 @@ rendu inclus. Sert dans les briefs, les quick wins, l'analyse de SERP.
 Offre gratuite généreuse : [firecrawl.dev](https://firecrawl.dev) → clé API →
 `FIRECRAWL_API_KEY` dans `.env`.
 
-### DataForSEO
-
-**Ce que ça débloque** : volumes de recherche, difficulté, SERP live,
-positions des concurrents, présence d'AI Overview.
-
-Le meilleur rapport qualité/prix du marché : paiement à la requête, pas
-d'abonnement. Comptez quelques euros par mois en usage normal.
-
-[app.dataforseo.com/api-access](https://app.dataforseo.com/api-access) →
-`DATAFORSEO_USERNAME` et `DATAFORSEO_PASSWORD`.
-
-> Ce ne sont **pas** vos identifiants de connexion au site : allez bien dans
-> l'onglet API Access. C'est la cause n°1 des erreurs 401.
-
 ### Ubersuggest
 
-**Ce que ça débloque** : expansion sémantique, suggestions Google, idées de
-contenu.
+**Ce que ça débloque** : toute la donnée marché, d'une seule source —
+volumes, difficulté, CPC, intention et tendance ; SERP (top 10 avec
+autorité et clics estimés, présence d'un AI Overview et d'« Autres
+questions posées ») ; questions réelles de l'autocomplétion Google ;
+concurrents et leurs mots-clés ; backlinks, ancres et score de spam ;
+suivi de positions des projets ; visibilité de la marque dans ChatGPT,
+Gemini et les AI Overviews.
 
-Le plus simple : le **connecteur claude.ai** (Réglages → Connecteurs), un
-clic, sans clé. Sinon `UBERSUGGEST_API_KEY`.
+Ubersuggest n'a **pas d'API à clé** : son seul accès programmatique est son
+serveur MCP officiel (`https://ubersuggest-mcp.neilpatelapi.com/mcp`), en
+OAuth. Deux façons de s'en servir, complémentaires :
+
+1. **Le connecteur claude.ai** (Réglages → Connecteurs → Ubersuggest) :
+   Claude appelle les outils pendant une session, et une **routine cloud**
+   qui inclut le connecteur peut s'en servir aussi.
+2. **Les scripts** (`demande.py`, `serp_concurrents.py`, `liens.py`,
+   `cartographie.py --volumes`) appellent le même serveur sans connecteur.
+   Connexion une fois par projet :
+   ```
+   python3 scripts/ubersuggest.py connexion
+   ```
+   Ouvrez le lien affiché, connectez-vous ; le navigateur finit sur une
+   page `localhost` qui ne s'affiche pas : copiez son adresse et passez-la
+   à `ubersuggest.py connexion --retour "<adresse>"`. Le jeton est gardé
+   dans `.seo-decupler/ubersuggest.json` (hors git). Vérifiez avec
+   `python3 scripts/ubersuggest.py statut`.
+
+> **Routines cloud** : Ubersuggest renouvelle son jeton à chaque usage et
+> refuse l'ancien. Un secret fixe ne tient donc qu'une exécution. Dans une
+> routine, c'est le connecteur qui fait les appels ; les réponses
+> enregistrées passent aux scripts (`serp_concurrents.py --serp-json`).
+
+**Quota** : les appels consomment celui de l'application web — un rapport
+par mot-clé ou domaine distinct et par jour (300 par jour sur le plan
+Business). `ubersuggest.py statut` dit ce qui reste.
+
+**Ce qu'Ubersuggest ne renvoie pas** : le texte et les sources de l'AI
+Overview, et les questions du bloc « Autres questions posées » (seulement
+leur présence). Le score de spam d'un lien est peu discriminant :
+`liens.py` le combine avec le vocabulaire des réseaux de liens. Ses outils
+de backlinks sont bridés en débit, sans que ce soit documenté : après
+quelques pages de 100 liens enchaînées, ils répondent 403 pendant un temps.
 
 ---
 
@@ -190,17 +213,6 @@ New integration → capacités lecture + écriture + insertion →
 > l'intégration : sur la page Notion → « ••• » → Connexions → ajouter.
 > Sans ça, l'API renvoie « object not found » même avec un token valide.
 > C'est 90 % des échecs de connexion Notion.
-
-### Semrush et Ahrefs
-
-Plans API requis, généralement sur les offres supérieures.
-[semrush.com/api-analytics](https://www.semrush.com/api-analytics/) ·
-[ahrefs.com/api](https://ahrefs.com/api)
-
-Utiles pour les gaps concurrents (Semrush) et les backlinks (Ahrefs). Le
-dispositif fonctionne sans, avec moins de données de marché.
-
----
 
 ## Niveau 4 — Visibilité IA
 

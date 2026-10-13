@@ -25,13 +25,15 @@ Trois sources, dans cet ordre de fiabilité :
 1. **Search Console** — ce sur quoi vous êtes déjà vu. La donnée la plus
    fiable qui existe, parce qu'elle est vraie pour *votre* site. Les requêtes
    à impressions et sans clic sont les plus rentables.
-2. **Vos concurrents** — leurs mots-clés organiques (Semrush, Ahrefs). Ils
-   ont déjà fait le travail de validation du marché.
+2. **Vos concurrents** — leurs mots-clés organiques (Ubersuggest
+   `competitors` puis `domain_keywords`). Ils ont déjà fait le travail de
+   validation du marché.
 3. **L'expansion** — `demande.py`, suggestions Google, People Also Ask,
    Reddit.
 
-`demande.py` interroge DataForSEO sans connecteur MCP : il tourne donc aussi
-dans une routine cloud (identifiants `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD`).
+`demande.py` interroge Ubersuggest sans connecteur MCP, par son serveur
+officiel (connexion une fois : `ubersuggest.py connexion`). Chaque graine ou
+mot-clé consomme un rapport du quota quotidien.
 
 ```bash
 # Longue traîne : volume, KD, intention, tendance sur un an
@@ -39,7 +41,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" idees --graines "graine 1, gr
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" idees --lexique --langue fr --ecrire   # graines = lexique du projet
 # Volumes de requêtes déjà connues
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" volumes --mots "requête a, requête b" --langue fr
-# SERP d'une requête candidate : top 10, PAA, AI Overview
+# SERP d'une requête candidate : top 10, présence PAA et AI Overview, questions
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" serp --mot "requête" --langue fr
 ```
 
@@ -47,20 +49,20 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" serp --mot "requête" --langu
 produit `donnees/demande-<langue>-<date>.csv`, que `seo-opportunites` lit
 directement. Une passe par langue du projet.
 
-**Avec le MCP Ubersuggest** (dans une session, pas dans une routine
-cloud sans connecteur) :
+**Avec le MCP Ubersuggest** (connecteur claude.ai : en session, et dans une
+routine cloud, où le script ne peut pas garder sa connexion) :
 - `auth_status` d'abord : un compte déconnecté se dit, il ne se remplace
   pas par des chiffres supposés ;
 - à **chaque** appel, la langue (`language: "fr"`) et le pays (`locId`,
   via `location_suggest`) : sans `locId`, les volumes sont mondiaux, et le
   rapport doit le dire ;
-- `keyword_suggestions` pour la longue traîne (questions, comparaisons),
-  `keyword_overview` pour volume, difficulté, CPC et tendance,
-  `serp_analysis` pour le top 10 ;
-- Ubersuggest **n'expose pas la présence d'un AI Overview** : prenez les
-  questions remontées par `keyword_suggestions` comme indice de PAA, et
-  `brand_visibility_overview` / `brand_prompts` pour la visibilité dans les
-  moteurs IA ;
+- `match_keywords` pour la longue traîne, `google_suggestions` pour les
+  questions réelles (autocomplétion), `keyword_overview` pour volume,
+  difficulté, CPC et tendance, `serp_analysis` pour le top 10 ;
+- `serp_analysis` dit si la SERP affiche un AI Overview ou des « Autres
+  questions posées » (`type` des entrées), sans en renvoyer le contenu ;
+  `brand_visibility_overview` / `brand_prompts` mesurent la visibilité de
+  la marque dans ChatGPT, Gemini et les AI Overviews ;
 - les réponses brutes se gardent dans un cache du projet (non versionné),
   puis se réduisent au CSV `requete,volume,page` que lit `seo-opportunites`.
 

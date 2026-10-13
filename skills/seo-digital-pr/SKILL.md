@@ -101,7 +101,7 @@ générique envoyé à 200 journalistes obtient zéro reprise.
 
 | Indicateur | Où |
 |------------|-----|
-| Domaines référents gagnés | Ahrefs, sur l'URL de l'étude |
+| Domaines référents gagnés | Ubersuggest `linking_domains`, sur l'URL de l'étude (`mode: url`) |
 | Mentions sans lien | Recherche du chiffre-titre |
 | Citations par les LLM | `/seo share-of-model` — posez la question à laquelle l'étude répond |
 | Trafic organique de la page | GSC |

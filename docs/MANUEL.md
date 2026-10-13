@@ -25,7 +25,7 @@ chaque étape y dit ce que vous devez voir et quoi faire si ça bloque.
 |---|---|---|---|
 | **La méthode** | les SOP (quoi faire, dans quel ordre), les skills (comment le faire), les agents (qui le fait), les scripts (ce qui mesure et publie) | ce dépôt, `decupler-seo` | une PR ici, jamais une copie |
 | **Le projet** | un site client : sa mémoire (marque, style, faits, décisions), son journal, ses données, ses skills `projet-…` | un dépôt privé par client | vous, vos prestataires, la routine |
-| **Les outils** | Search Console, GA4, le CMS, Notion, DataForSEO… branchés par MCP ou par clé | `.mcp.json` du projet + variables d'environnement | vous, une fois |
+| **Les outils** | Search Console, GA4, le CMS, Notion, Ubersuggest… branchés par MCP, connecteur ou clé | `.mcp.json` du projet + variables d'environnement | vous, une fois |
 
 **Comment une tâche se déroule.** Vous dites « suis la SOP brief pour "audit
 geo" ». Claude lit la SOP, qui cite un skill ; le skill dit quoi faire et

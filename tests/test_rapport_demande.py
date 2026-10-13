@@ -1,4 +1,4 @@
-"""Rapport mensuel et demande : les chiffres du client viennent de ces calculs."""
+"""Rapport mensuel : les chiffres du client viennent de ces calculs."""
 
 import re
 import sys
@@ -7,7 +7,6 @@ import unittest
 from _outils import SCRIPTS
 
 sys.path.insert(0, str(SCRIPTS))
-import demande  # noqa: E402
 import rapport  # noqa: E402
 
 
@@ -79,28 +78,6 @@ class TestCalculs(unittest.TestCase):
         refs = ["claude/hebdo-2026-10-07", "claude/hebdo-2026-10-14"]
         r = rapport.bilan_runs(rapport.runs_des_branches(refs), "2026-10")
         self.assertEqual((r["mode"], r["veille_trouvees"], r["veille_attendues"]), ("hebdo", 2, 4))  # 4 mercredis en octobre 2026
-
-
-class TestDemande(unittest.TestCase):
-    def test_pays_inconnu_demande_un_lieu(self):
-        class A:
-            pays, lieu, langue = "ZZ", None, "fr"
-        with self.assertRaises(SystemExit):
-            demande.lieu_et_langue(A())
-
-    def test_lieu_depuis_code_pays(self):
-        class A:
-            pays, lieu, langue = "be", None, "FR"
-        self.assertEqual(demande.lieu_et_langue(A()), ("Belgium", "fr"))
-
-    def test_identifiants_absents(self):
-        import os
-        avant = {k: os.environ.pop(k, None) for k in ("DATAFORSEO_LOGIN", "DATAFORSEO_USERNAME", "DATAFORSEO_PASSWORD")}
-        try:
-            with self.assertRaises(demande.ErreurAPI):
-                demande.identifiants()
-        finally:
-            os.environ.update({k: v for k, v in avant.items() if v})
 
 
 if __name__ == "__main__":

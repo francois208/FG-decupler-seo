@@ -69,7 +69,7 @@ jamais exécuté.
 
 Pour chaque page retenue, sur sa requête principale :
 
-1. SERP live (DataForSEO) → les 3 premiers résultats
+1. SERP live (Ubersuggest, `serp_analysis`) → les 3 premiers résultats
 2. Scraper chacun (Firecrawl) → plan Hn, longueur, format, angles
 3. Comparer avec votre page :
    - Quels sous-sujets couvrent-ils que vous ne couvrez pas ?

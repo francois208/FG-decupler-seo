@@ -29,7 +29,8 @@ vos concurrents SEO — indépendamment de ce que vend l'entreprise.
 ### Gap A — Ils couvrent, vous ne couvrez pas
 Le plus évident, le plus facile à exploiter.
 
-Via Semrush/Ahrefs : leurs mots-clés organiques moins les vôtres. Filtrez
+Via Ubersuggest (`domain_keywords` sur chaque concurrent et sur vous,
+même `locId`) : leurs mots-clés organiques moins les vôtres. Filtrez
 sur difficulté atteignable et intention alignée avec ce que vous vendez.
 
 ⚠️ Un gap n'est pas une opportunité par défaut. Un concurrent média ranke
@@ -89,7 +90,9 @@ C'est actionnable, et beaucoup moins concurrentiel que la SERP classique.
 
 ## Profil de liens
 
-Via Ahrefs : les domaines qui lient vos 3 concurrents **mais pas vous**.
+Via Ubersuggest (`backlink_opportunity` : vos 3 concurrents en
+`positive_targets`, vous en `negative_targets`) : les domaines qui lient vos
+3 concurrents **mais pas vous**.
 C'est votre liste de prospection netlinking, déjà qualifiée — ces sites ont
 prouvé qu'ils acceptent de lier des acteurs de votre secteur.
 

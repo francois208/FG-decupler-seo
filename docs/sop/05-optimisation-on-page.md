@@ -18,7 +18,7 @@
 4. Il réécrit la version complète, prête à coller, et propose 3 titles et 2 metas avec l'aperçu dans Google.
 5. Les requêtes Search Console de la page qui ont des impressions sans clic deviennent des sections ou des questions de FAQ.
 
-**MCP nécessaires** : Search Console. DataForSEO ou Firecrawl pour le top 3.
+**MCP nécessaires** : Search Console. Ubersuggest ou Firecrawl pour le top 3.
 
 **Livrable** : Le rapport noté sur 100 et la version réécrite, avec title et meta.
 

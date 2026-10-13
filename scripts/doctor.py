@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _projet import charger_env, config_est_le_modele, fichier_config, racine_projet, resoudre  # noqa: E402
+from _projet import charger_env, config_est_le_modele, dossier_etat, fichier_config, racine_projet, resoudre  # noqa: E402
 
 # (identifiant, nom, variables requises, niveau, ce que ça débloque, où l'obtenir, coût)
 OUTILS = [
@@ -35,18 +35,10 @@ OUTILS = [
     ("firecrawl", "Firecrawl", ["FIRECRAWL_API_KEY"], 2,
      "Lecture propre des concurrents, extraction de plans Hn, veille",
      "https://firecrawl.dev", "offre gratuite généreuse"),
-    ("dataforseo", "DataForSEO", ["DATAFORSEO_LOGIN|DATAFORSEO_USERNAME", "DATAFORSEO_PASSWORD"], 2,
-     "Volumes de recherche, difficulté, SERP live, positions concurrents",
-     "https://app.dataforseo.com/api-access", "à la requête, ~0,05 $ / appel"),
-    ("ubersuggest", "Ubersuggest", ["UBERSUGGEST_API_KEY"], 2,
-     "Expansion sémantique, suggestions Google, idées de contenu",
-     "Connecteur claude.ai (un clic, sans clé) ou clé API", "abonnement ou connecteur"),
-    ("semrush", "Semrush", ["SEMRUSH_API_KEY"], 3,
-     "Gaps de mots-clés concurrents, position tracking",
-     "https://www.semrush.com/api-analytics/", "plan API requis"),
-    ("ahrefs", "Ahrefs", ["AHREFS_API_KEY"], 3,
-     "Backlinks, autorité, prospection netlinking chiffrée",
-     "https://ahrefs.com/api", "plan API requis"),
+    ("ubersuggest", "Ubersuggest", ["UBERSUGGEST_REFRESH_TOKEN"], 2,
+     "Volumes, difficulté, SERP (AI Overview, PAA), concurrents, backlinks et spam, visibilité IA",
+     "Scripts : python3 scripts/ubersuggest.py connexion · sessions et routines : connecteur claude.ai",
+     "abonnement Ubersuggest (quota de rapports par jour)"),
     ("wordpress", "WordPress (facultatif)", ["WP_SITE_URL", "WP_USER|WP_USERNAME", "WP_APP_PASSWORD"], 3,
      "Publication en brouillon, title/meta journalisés, carte de contenu et maillage (wp.py)",
      "WordPress → Profil → Mots de passe d'application", "gratuit"),
@@ -84,6 +76,8 @@ NIVEAUX = {
 def _verifier(outil) -> dict:
     ident, nom, variables, niveau, debloque, obtenir, cout = outil
     manquantes = []
+    if ident == "ubersuggest" and dossier_etat("ubersuggest.json").is_file():
+        variables = []                  # connecté par `ubersuggest.py connexion` : le jeton est dans le projet
     for var in variables:
         if "|" in var:
             # Plusieurs variables possibles : une seule suffit.

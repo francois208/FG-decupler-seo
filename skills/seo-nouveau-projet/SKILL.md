@@ -125,7 +125,7 @@ facilement ensuite :
   hreflang et x-default — voir `seo-hreflang-i18n`. À décider avant la
   première page publiée.
 - **Recherche de mots-clés dans la langue et le pays cibles**, avec la bonne
-  localisation dans DataForSEO, Semrush ou Ubersuggest. Traduire une liste
+  localisation dans Ubersuggest (`locId` du pays). Traduire une liste
   de mots-clés français ne donne pas les requêtes réelles du marché.
 - **Rédaction native**, pas traduction : les requêtes, les objections et les
   preuves attendues diffèrent d'un marché à l'autre.

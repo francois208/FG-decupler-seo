@@ -9,7 +9,11 @@ Lis `routines/_commun.md`, puis :
 ## Puis les pages de la semaine
 1. Sujet : action validée, sinon le calendrier (`rapports/calendrier-*.md`) ; jamais un
    mot-clé déjà porté par une autre page de la même langue (`memoire/cartographie.csv`).
-2. `serp_concurrents.py`, brief avec triplets (`seo-entites-triplets`), rédaction dans le
+2. SERP par le connecteur Ubersuggest (`serp_analysis` et `google_suggestions`, `locId` du
+   pays) : enregistre les deux réponses telles quelles, puis
+   `serp_concurrents.py --serp-json serp.json --questions suggestions.json` (le script ne
+   peut pas se connecter lui-même dans une routine). Brief avec triplets
+   (`seo-entites-triplets`), rédaction dans le
    style de `memoire/style.md`, design (`seo-design-pages`), images, contrôles bloquants.
 3. Publication selon `publication.mode` : `cms` → brouillon ; `depot` → PR.
    Ajoute chaque page à `rapports/a-valider.md`, au journal (page-neuve) et à la cartographie.

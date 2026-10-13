@@ -162,7 +162,7 @@ Options payantes, désactivées par défaut — annoncez le coût avant :
 
 | Option | Ce qu'elle fait | Coût |
 |---|---|---|
-| `--volumes` | rafraîchit `volume` par DataForSEO (`demande.py`) | affiché après l'appel |
+| `--volumes` | rafraîchit `volume` et `kd` par Ubersuggest | un rapport du quota quotidien par mot-clé, affiché après |
 | `--prompts` | interroge les moteurs IA sur les prompts principaux, écrit `donnees/cartographie-ia-AAAA-MM.csv` | un appel par prompt et par moteur, annoncé avant |
 | `--moteurs openai,gemini` | limite les moteurs de `--prompts` | |
 

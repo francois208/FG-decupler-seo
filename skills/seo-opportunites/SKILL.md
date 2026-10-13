@@ -60,20 +60,20 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/opportunites.py" --ecrire
 - Sans API Search Console : exporter Performances en requêtes × pages et
   passer `--csv export.csv`.
 - Pour voir aussi la demande où le site **n'apparaît pas** : un CSV
-  `requete,volume,page` issu de DataForSEO, Ubersuggest ou Semrush, en
+  `requete,volume,page` issu d'Ubersuggest (ou de tout autre outil), en
   `--demande mots-cles.csv`. La colonne `page` (facultative) indique la page
   publiée qui vise la requête : elle distingue « page à créer » de « page
   publiée mais invisible ». C'est indispensable sur un site jeune, qui a
   encore peu d'impressions — et le script fonctionne alors même sans accès
   Search Console.
-- Ce fichier de demande se produit sans connecteur, donc aussi dans une
-  routine cloud :
+- Ce fichier de demande se produit sans connecteur (connexion Ubersuggest
+  du projet, `ubersuggest.py connexion`) :
   ```bash
   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" idees --lexique --langue fr --ecrire
   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/opportunites.py" --demande donnees/demande-fr-<date>.csv --ecrire
   ```
   Les graines viennent des thèmes du lexique ; une passe par langue du
-  projet. Sans DataForSEO, le même CSV se produit en session avec le MCP
+  projet. Dans une routine cloud, le même CSV se produit avec le connecteur
   Ubersuggest (`seo-keyword-research`, étape 1 : langue et pays à chaque
   appel, volumes mondiaux signalés). Renseignez ensuite la colonne `page` pour les requêtes déjà
   visées par une page publiée.

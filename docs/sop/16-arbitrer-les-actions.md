@@ -20,7 +20,7 @@
 6. **Écrire ce qu'on ne fait pas** : chaque action écartée va dans `memoire/decisions.md` avec la raison. Elle ne revient pas le mois suivant sans fait nouveau.
 7. Les actions retenues vont sur la page de suivi en « à décider » ; le client ou vous les validez.
 
-**MCP nécessaires** : Search Console ; DataForSEO ou Ubersuggest pour la demande ; GA4 pour la valeur réelle d'une page quand il existe.
+**MCP nécessaires** : Search Console ; Ubersuggest pour la demande ; GA4 pour la valeur réelle d'une page quand il existe.
 
 **Livrable** : 3 à 5 actions chiffrées sur la page de suivi, et les actions écartées dans `memoire/decisions.md`.
 

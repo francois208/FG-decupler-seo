@@ -30,7 +30,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/crawl_site.py" <ancien-site> --max 5000 -
 Croisez trois sources :
 1. **Crawl** — toutes les URL accessibles
 2. **Search Console** — 16 mois de pages qui reçoivent des impressions
-3. **Backlinks** (Ahrefs) — les URL qui reçoivent des liens externes
+3. **Backlinks** (Ubersuggest, `liens.py domaines` : `url_to` de chaque lien) — les URL qui reçoivent des liens externes
 
 Cette troisième source est celle qu'on oublie. Une page sans trafic mais
 avec 40 backlinks vaut plus qu'une page à 200 visites/mois.

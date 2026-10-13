@@ -13,12 +13,12 @@
 ## Étapes
 
 1. La batterie : 20 à 40 questions d'acheteur, en quatre familles (découverte, comparaison, problème, marque). Les prompts principaux de ta cartographie en font partie.
-2. L'interrogation (`share_of_model.py`) : ChatGPT et Gemini par API, avec la recherche web ; Claude et Perplexity si tu as leurs clés ; les AI Overviews par DataForSEO ou à la main.
+2. L'interrogation (`share_of_model.py`) : ChatGPT et Gemini par API, avec la recherche web ; Claude et Perplexity si tu as leurs clés ; les AI Overviews par l'AI Search Visibility d'Ubersuggest ou à la main.
 3. Le relevé, prompt par prompt et moteur par moteur : cité ou non, à quel rang, avec ou sans lien, la phrase exacte, les sources, l'exactitude.
 4. Le calcul : taux de citation, part de voix pondérée par le rang, par moteur, et le même calcul pour tes 3 concurrents.
 5. Pour une page précise qui n'est jamais citée, `geo-citation-tracker` réécrit sa réponse directe (voir la partie GEO).
 
-**MCP nécessaires** : Clés OpenAI et Gemini (les deux suffisent pour commencer). Anthropic et Perplexity en option. DataForSEO pour les AI Overviews.
+**MCP nécessaires** : Clés OpenAI et Gemini (les deux suffisent pour commencer). Anthropic et Perplexity en option. Ubersuggest (connecteur) pour les AI Overviews.
 
 **Livrable** : `donnees/ia-<mois>.csv` et le tableau de part de voix, par moteur et face aux concurrents.
 

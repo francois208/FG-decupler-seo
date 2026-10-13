@@ -10,7 +10,7 @@ de quarante minutes à six.
 | `seo-performance` | Core Web Vitals mesurés, décomposition du LCP, tâches longues, CLS |
 | `seo-contenu` | Qualité, profondeur, contenu mince, duplication, cannibalisation, lisibilité |
 | `seo-redacteur` | Rédaction SEO + GEO, style humain, recherche obligatoire, sources vérifiées |
-| `seo-data` | Search Console, GA4, DataForSEO. La source de vérité chiffrée |
+| `seo-data` | Search Console, GA4, Ubersuggest. La source de vérité chiffrée |
 | `seo-serp` | Lecture de SERP, intention réelle, features, difficulté véritable |
 | `seo-schema` | JSON-LD, validation, dépréciations, chaîne d'entité |
 | `seo-geo` | Citabilité par les moteurs IA, extractibilité, réponse directe |

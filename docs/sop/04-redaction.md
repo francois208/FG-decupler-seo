@@ -20,7 +20,7 @@
 6. Passe d'humanisation (`seo-humanisation`) : `humanisation.py` repère les tics d'écriture générée, Claude réécrit les paragraphes signalés dans ton style, sans changer le fond ; score sous 25 et mêmes chiffres avant et après.
 7. `controle_contenu.py` bloque toute promesse ou tout chiffre sans source avant publication.
 
-**MCP nécessaires** : DataForSEO ou Firecrawl pour la recherche. WordPress pour le brouillon.
+**MCP nécessaires** : Ubersuggest (ou Firecrawl) pour la recherche. WordPress pour le brouillon.
 
 **Livrable** : La page en HTML ou en Markdown, ses sources, son schema, et le verdict E-E-A-T (publier, réviser ou réécrire).
 

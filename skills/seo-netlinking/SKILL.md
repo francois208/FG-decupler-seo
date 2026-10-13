@@ -17,12 +17,18 @@ un site mentionné partout est un site que les modèles connaissent.
 
 ## Étape 1 — Auditer l'existant
 
-Via Ahrefs : domaines référents, autorité, liens dofollow/nofollow, ancres,
-pages de destination, historique d'acquisition, liens perdus.
+Par Ubersuggest, trié entre vrais liens et spam automatique :
 
-**Sans Ahrefs** : `backlinks_overview` d'Ubersuggest sur le domaine du
-client (autorité, backlinks, domaines référents) donne la ligne de base.
-Sans ce point de départ mesuré et daté, aucun objectif n'est calibrable.
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/liens.py" resume --cible <domaine>     # autorité, domaines référents, liens
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/liens.py" domaines --cible <domaine>   # un lien par domaine : propres / spam
+```
+
+`domaines` lit tous les domaines référents (un lien chacun : ancre, page
+de destination, dofollow, date d'apparition) et écarte le spam des réseaux
+de liens. Ancres : `anchor_texts` ; gagnés et perdus sur 60 jours :
+`linking_domains` (MCP). Sans ce point de départ mesuré et daté, aucun
+objectif n'est calibrable.
 
 Quatre indicateurs à regarder :
 
@@ -76,8 +82,9 @@ requêtes est une cible de premier rang ; un annuaire généraliste, jamais.
 
 ### 1. Les liens des concurrents que vous n'avez pas
 Le meilleur point de départ : ces sites ont **déjà prouvé** qu'ils lient des
-acteurs de votre secteur. Via Ahrefs (Link Intersect), sortez les domaines
-qui lient 2 ou 3 de vos concurrents et pas vous.
+acteurs de votre secteur. Avec `backlink_opportunity` (MCP Ubersuggest :
+concurrents en `positive_targets`, votre domaine en `negative_targets`),
+sortez les domaines qui lient 2 ou 3 de vos concurrents et pas vous.
 
 ### 2. Les mentions non liées
 Cherchez votre marque sur le web, relevez les mentions sans lien. Un email
@@ -127,7 +134,7 @@ Ne démarchez pas au hasard. Notez chaque prospect sur 20 :
 
 **Seuil : 13/20.** En dessous, le temps est mieux investi ailleurs.
 
-**Sans Ahrefs, avec Ubersuggest** : `backlinks_overview` (réponse compacte)
+**Avec Ubersuggest** : `backlinks_overview` (réponse compacte)
 pour qualifier en lot ; `domain_overview` (réponse très volumineuse)
 seulement pour les 4-5 cibles prioritaires, sinon le contexte sature ;
 `domain_top_pages` pour choisir la page précise où viser le lien. **Un
@@ -251,7 +258,7 @@ introuvable). Un prospect `bloque` n'est pas un échec : c'est une tâche.
 
 Et une surveillance mensuelle des **liens perdus**. Un lien qui disparaît
 d'une page à forte autorité fait bouger les positions, et personne ne s'en
-aperçoit. Ahrefs le signale ; un email au webmaster récupère le lien dans un
+aperçoit. `linking_domains` (`filter_by: "lost"`) le signale ; un email au webmaster récupère le lien dans un
 cas sur trois.
 
 ## Étape 7 — Liens toxiques et désaveu

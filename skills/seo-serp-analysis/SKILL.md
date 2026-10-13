@@ -22,16 +22,18 @@ sur une requête où Google ne montre que des fiches produit.
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/serp_concurrents.py" --mot "<requête>" --langue fr [--top 8] [--url <page du client>]
 ```
 
-Une SERP DataForSEO (pays de la config) : top 10, **toutes les features**
-(`item_types`), PAA dépliées d'un niveau, AI Overview chargé même quand
-Google l'affiche en différé (extrait et sources citées), extrait optimisé,
-recherches associées. Puis chaque page du top est lue : title, meta, plan
-H1-H3, listes, tableaux, mots, FAQ, schémas, images, liens, dates, ton.
-Coût : 0,002 à 0,004 $ ; la lecture des pages est gratuite (le repli
-`--repli-dataforseo` pour les pages bloquées est facturé).
+Une SERP Ubersuggest (pays de la config) : top 10 avec autorité et clics
+estimés, **les features affichées** (AI Overview, « Autres questions
+posées », images, comparateurs…), et les questions réelles de
+l'autocomplétion Google. Puis chaque page du top est lue : title, meta,
+plan H1-H3, listes, tableaux, mots, FAQ, schémas, images, liens, dates, ton.
+Coût : deux rapports du quota quotidien Ubersuggest ; la lecture des pages
+est gratuite. Une page bloquée ou rendue en JavaScript se relève avec
+Firecrawl (`--pages-json`).
 
-À défaut d'identifiants : une recherche en navigation privée sur le bon
-domaine Google, et les pages lues avec Firecrawl.
+Ubersuggest dit qu'un AI Overview est là, pas ce qu'il cite : pour ses
+sources, ouvrez la SERP dans le navigateur (Chrome DevTools, bon domaine
+Google, navigation privée).
 
 ## Étape 2 — L'intention dominante
 

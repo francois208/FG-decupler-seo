@@ -18,7 +18,10 @@ Créez la routine sur https://claude.ai/code/routines → **New routine** → **
 - **Dépôt** : ce dépôt uniquement. Une routine à un seul dépôt lit son
   `CLAUDE.md`, ses skills, ses agents et son `.mcp.json`.
 - **Connecteurs** : gardez seulement ceux dont la routine a besoin
-  (Search Console via Windsor.ai ou équivalent, le CMS, Notion si utilisé).
+  (Search Console via Windsor.ai ou équivalent, le CMS, Notion si utilisé,
+  Ubersuggest pour la routine de contenu : SERP, volumes, questions).
+  Ubersuggest passe par le connecteur, jamais par un secret : son jeton
+  change à chaque usage, un secret fixe ne tiendrait qu'une exécution.
   Une routine peut utiliser **toutes** les actions d'un connecteur inclus,
   y compris les écritures, sans demander.
 - **Environnement** : créez-en un dédié au projet.

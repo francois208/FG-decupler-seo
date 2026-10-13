@@ -19,7 +19,7 @@
 5. Les silos : une page pilier par thème, des satellites qui la soutiennent, et le plan de liens entre les niveaux.
 6. Chaque mois, `cartographie.py mensuel` relève la position de chaque page sur son mot-clé et la citation de son prompt par ChatGPT, Gemini et Claude.
 
-**MCP nécessaires** : Search Console (ou un export CSV). DataForSEO ou Ubersuggest pour les volumes. Notion en option, pour l'export.
+**MCP nécessaires** : Search Console (ou un export CSV). Ubersuggest pour les volumes. Notion en option, pour l'export.
 
 **Livrable** : `memoire/cartographie.csv` (une ligne par page : mot-clé, prompt, silo, priorité) et le plan de silos.
 

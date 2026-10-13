@@ -25,12 +25,15 @@
 | 403 | Ajouter le compte de service en Lecteur sur la propriété GA4 |
 | Propriété introuvable | `GA4_PROPERTY_ID` doit être le nombre à 9 chiffres, pas l'ID de flux |
 
-## DataForSEO
+## Ubersuggest
 
 | Symptôme | Correctif |
 |----------|-----------|
-| 401 | Les identifiants API ne sont pas ceux du site. Les récupérer dans **API Access** |
-| Réponses vides | Vérifier le code pays et la langue dans la requête |
+| « pas connecté » | `ubersuggest.py connexion` dans le projet, puis `ubersuggest.py statut` |
+| `invalid_grant` au renouvellement | Le jeton a déjà servi ailleurs (Ubersuggest le renouvelle à chaque usage) : se reconnecter |
+| 403 sur les backlinks seulement | Débit bridé après plusieurs pages enchaînées : réessayer plus tard, ou passer par le connecteur claude.ai |
+| Quota épuisé | Un rapport par mot-clé ou domaine distinct et par jour : `ubersuggest.py statut`, reprise le lendemain |
+| Volumes mondiaux, ou étrangers | `locId` absent ou faux : `--pays`, ou `--loc-id` trouvé par `location_suggest` |
 
 ## WordPress
 

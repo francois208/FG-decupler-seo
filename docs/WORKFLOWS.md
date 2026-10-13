@@ -8,7 +8,7 @@ plusieurs skills sans que vous ayez à orchestrer quoi que ce soit.
 ## 1 · Quick wins — ≈ 6 min
 
 **Quand** : chaque mois. C'est le meilleur rapport effort/résultat du SEO.
-**Prérequis** : Search Console. DataForSEO et Firecrawl améliorent le résultat.
+**Prérequis** : Search Console. Ubersuggest et Firecrawl améliorent le résultat.
 
 ```
 /seo quickwins
@@ -44,8 +44,8 @@ plusieurs skills sans que vous ayez à orchestrer quoi que ce soit.
 ```
 
 **La chaîne**
-1. Expansion sémantique (Ubersuggest, suggestions Google)
-2. Volumes, difficulté, CPC (DataForSEO)
+1. Expansion sémantique (Ubersuggest : suggestions, autocomplétion Google)
+2. Volumes, difficulté, CPC (Ubersuggest)
 3. SERP live → intention réelle déduite des types de page du top 5
 4. Scrape des 5 premiers → plans Hn côte à côte
 5. Questions People Also Ask

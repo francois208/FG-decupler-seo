@@ -21,8 +21,10 @@ n'occupe rien du tout.
 ## Les 4 sources de questions (dans cet ordre)
 
 ### 1. People Also Ask — les questions que Google a validées
-Via DataForSEO ou en dépliant les PAA de la SERP cible. Ce sont des
-questions réellement posées, avec un volume avéré.
+En dépliant les PAA de la SERP cible dans le navigateur (Ubersuggest dit
+si le bloc est présent, pas ce qu'il contient). Ce sont des questions
+réellement posées, avec un volume avéré. Les questions de l'autocomplétion
+(`google_suggestions`, groupe `questions`) complètent la liste.
 
 Astuce : déplier un PAA en fait apparaître de nouveaux. Descendez sur deux
 niveaux, vous obtenez 15-20 questions au lieu de 4.

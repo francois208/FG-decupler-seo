@@ -48,10 +48,10 @@ notoriété des outils.
 | 2 | **Chrome DevTools** | gratuit | 0 min | Core Web Vitals réels, rendu final, screenshots. |
 | 3 | **GA4** | gratuit | 10 min | Relie le SEO au chiffre d'affaires. |
 | 4 | **Firecrawl** | gratuit (offre) | 2 min | Lecture propre des concurrents. |
-| 5 | **DataForSEO** | à la requête | 5 min | Volumes et SERP live. Le moins cher du marché. |
+| 5 | **Ubersuggest** | abonnement (ou lifetime) | 2 min | Volumes, SERP, concurrents, backlinks, visibilité IA : toute la donnée marché. |
 | 6 | **Notion** | gratuit | 1 clic | Pilotage : leads, objectifs, roadmap. |
 | 7 | **WordPress / Webflow** | gratuit | 5 min | Publication automatique. |
-| 8+ | Ahrefs, Semrush, Perplexity, Reddit, Ubersuggest | variable | — | Backlinks, gaps, visibilité IA. |
+| 8+ | Perplexity, Reddit, moteurs IA | variable | — | Visibilité IA mesurée, vocabulaire de l'audience. |
 
 **Les 4 premiers sont gratuits et couvrent 70 % de la valeur.** Dites-le.
 Beaucoup de gens croient qu'il faut 500 €/mois d'outils pour commencer.
@@ -138,7 +138,8 @@ la première action, choisie selon ce qui est branché :
 | MCP absent de la liste | Node manquant, ou Claude non redémarré | `node -v`, puis relancer Claude Code |
 | GSC renvoie 403 | Compte de service pas ajouté dans Search Console | Ajouter l'email en lecture seule |
 | GSC renvoie 0 ligne | Mauvais format de propriété | Essayer `sc-domain:exemple.com` |
-| DataForSEO 401 | Login/mot de passe API ≠ identifiants du site | Les récupérer dans API Access |
+| Ubersuggest « pas connecté » | Jeton absent ou périmé dans le projet | `ubersuggest.py connexion`, puis `ubersuggest.py statut` |
+| Ubersuggest 403 sur les backlinks | Débit bridé après plusieurs pages enchaînées | Réessayer plus tard, ou passer par le connecteur claude.ai |
 | WordPress 401 | Mot de passe de compte au lieu du mot de passe d'application | En générer un dans Profil |
 | Chrome DevTools ne rend rien | Chrome absent | Installer Chrome ou Chromium |
 

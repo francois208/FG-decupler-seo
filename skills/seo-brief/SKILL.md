@@ -4,7 +4,7 @@ description: >
   Produit un brief SEO/GEO consolidé en 18 sections, en deux variantes :
   CRÉATION d'une page neuve ou OPTIMISATION d'un contenu existant (verdict,
   décisions structurelles section par section). Données d'abord (SERP live
-  DataForSEO ou repli Firecrawl, top 5 lu et mesuré : Hn, longueur, entités,
+  Ubersuggest ou repli Firecrawl, top 5 lu et mesuré : Hn, longueur, entités,
   formats, FAQ, schémas, médias ; PAA, AI Overview, Search Console,
   cannibalisation, style mesuré du client, sitemap), puis intention, X-Ray
   du top 5, gap et information gain, mix de mots-clés, noyau sémantique et
@@ -45,42 +45,54 @@ différence entre un brief et une supposition.
    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/serp_concurrents.py" --mot "<mot-clé>" --langue fr
    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/serp_concurrents.py" --mot "<mot-clé>" --url <URL existante>   # OPTIMISATION
    ```
-   Une SERP DataForSEO (top 10, PAA dépliées, AI Overview et ses sources,
-   recherches associées, features ; 0,002 à 0,004 $), puis les 5 premières
-   pages concurrentes lues une à une. Sans connecteur, donc aussi dans une
-   routine. Deux fichiers dans `recherche/` :
+   Une SERP Ubersuggest (top 10 avec autorité et clics estimés, présence
+   d'un AI Overview et d'« Autres questions posées », features), les
+   questions réelles de l'autocomplétion Google (deux rapports du quota
+   quotidien), puis les 5 premières pages concurrentes lues une à une.
+   Connexion une fois par `ubersuggest.py connexion` (voir `docs/MCP.md`).
+   Deux fichiers dans `recherche/` :
    - `serp-<slug>-<date>.md` — les mesures : longueur (médiane et 3e
      quartile), plans Hn, sujets de H2 récurrents, questions marquées
-     « traitée par le top : oui / non », extrait et sources de l'AI
-     Overview, champ sémantique commun, ton du top ; avec `--url`, ce qui
+     « traitée par le top : oui / non », présence de l'AI Overview,
+     champ sémantique commun, ton du top ; avec `--url`, ce qui
      manque à la page du client (sujets, questions, termes, longueur) ;
    - `serp-<slug>-<date>-contenus.md` — le contenu de chaque concurrent,
      titres et listes conservés. **Lisez-le** : angles, preuves et failles
      ne se mesurent pas, ils se lisent.
 
    Une page illisible (403, rendu JavaScript) est signalée, pas inventée :
-   `--repli-dataforseo` la relit par DataForSEO (payant, coût affiché), ou
-   lisez-la avec Firecrawl.
+   relevez-la avec Firecrawl (`firecrawl_scrape`) et repassez-la par
+   `--pages-json`.
+
+   **Ce qu'Ubersuggest ne renvoie pas** : le texte et les sources de l'AI
+   Overview, et les questions du bloc « Autres questions posées » (il dit
+   seulement qu'ils sont présents). Quand l'AI Overview est présent, ouvrez
+   la SERP dans le navigateur (Chrome DevTools) et relevez ses sources pour
+   la section 3 ; sinon, écrivez **non mesuré**.
 
    **Quelle source pour la SERP** — la première qui répond, dans cet ordre :
 
    | Source | Ce qu'elle donne | Ce qui reste à relever |
    |---|---|---|
-   | DataForSEO (`serp_concurrents.py`) | top 10, PAA, AI Overview et ses sources, features | rien |
+   | Ubersuggest (`serp_concurrents.py`) | top 10 avec autorité, présence AI Overview et PAA, features, questions de l'autocomplétion | texte et sources de l'AI Overview, questions PAA |
+   | MCP Ubersuggest (connecteur claude.ai : `serp_analysis` et `google_suggestions`, `locId` du pays) | la même chose, dans une routine cloud | idem |
    | MCP Firecrawl (`firecrawl_search`, puis `firecrawl_scrape` sur le top 5, formats `markdown` + `html`) | top organique, pages rendues (JavaScript compris) | PAA, AI Overview, features : **non mesurés** |
-   | MCP Ubersuggest (`serp_analysis`, `locId` du pays) | top 10 avec trafic et autorité des domaines | PAA, AI Overview |
    | Aucune | — | lecture manuelle de la SERP, signalée en tête du brief |
 
-   Avec Firecrawl, enregistrez les réponses (`serp.json`, `pages.json` :
-   `[{"url", "html", "markdown"}]`) et passez-les au même script, qui
-   produit le même rapport sans DataForSEO :
+   Dans une routine cloud, le script ne peut pas se connecter lui-même
+   (Ubersuggest renouvelle son jeton à chaque usage) : le connecteur fait
+   les appels, vous enregistrez les réponses telles quelles (`serp.json` :
+   réponse de `serp_analysis` ; `suggestions.json` : réponse de
+   `google_suggestions` ; `pages.json` : `[{"url", "html", "markdown"}]`
+   de Firecrawl) et le même script produit le même rapport :
    ```bash
    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/serp_concurrents.py" --mot "<mot-clé>" --langue fr \
-       --serp-firecrawl serp.json --pages-json pages.json --questions paa.txt
+       --serp-json serp.json --questions suggestions.json --pages-json pages.json
    ```
-   `paa.txt` : une question par ligne, relevée ailleurs (PAA vues à la
-   main, questions Ubersuggest `keyword_suggestions`, Search Console). Ce
-   que la source ne donne pas s'écrit **non mesuré**, jamais « absent ».
+   `--serp-firecrawl serp.json` remplace `--serp-json` si Ubersuggest ne
+   répond pas ; `--questions` accepte aussi un fichier texte, une question
+   par ligne (PAA vues à la main, Search Console). Ce que la source ne
+   donne pas s'écrit **non mesuré**, jamais « absent ».
 
    Le rapport mesure, page par page : title, meta, plan H1-H3, mots,
    listes, tableaux, FAQ, schémas, images et vidéos, liens, dates, ton,
@@ -90,8 +102,8 @@ différence entre un brief et une supposition.
    ```bash
    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/demande.py" idees --graines "<mot-clé>, <variante>" --langue fr
    ```
-   Sans DataForSEO : MCP Ubersuggest `keyword_overview` et
-   `keyword_suggestions` avec le `locId` du pays (`location_suggest` pour
+   Dans une routine cloud : MCP Ubersuggest `match_keywords` et
+   `keyword_overview` avec le `locId` du pays (`location_suggest` pour
    le trouver ; sans `locId`, les volumes sont mondiaux : le dire). Un
    volume qu'aucun appel n'a renvoyé s'écrit `n.d.`.
 3. **Style de la maison** : `memoire/style.md`. S'il manque, mesurez-le sur

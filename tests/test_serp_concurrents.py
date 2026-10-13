@@ -54,23 +54,19 @@ def page_concurrente(url, rang, h2, mots_par_section=60, extra=""):
     return p
 
 
-SERP_BRUTE = [{
-    "item_types": ["ai_overview", "organic", "people_also_ask", "related_searches"],
-    "items": [
-        {"type": "ai_overview", "markdown": "Une **pompe à chaleur air-eau** coûte entre…",
-         "items": [{"type": "ai_overview_element", "text": "…",
-                    "references": [{"domain": "www.ademe.fr", "url": "https://www.ademe.fr/pac", "title": "PAC"}]}],
-         "references": [{"domain": "atlas-conseil.fr", "url": "https://atlas-conseil.fr/pac", "title": "Guide"},
-                        {"domain": "www.ademe.fr", "url": "https://www.ademe.fr/pac", "title": "PAC"}]},
-        {"type": "organic", "rank_group": 1, "url": "https://a.fr/pac", "domain": "a.fr", "title": "A"},
-        {"type": "people_also_ask", "items": [{"title": "Quel est le prix d'une pompe à chaleur air-eau ?"},
-                                              {"title": "Quelle aide pour une pompe à chaleur ?"},
-                                              {"title": "Quel bruit fait une pompe à chaleur ?"}]},
-        {"type": "organic", "rank_group": 2, "url": "https://www.atlas-conseil.fr/pac", "domain": "www.atlas-conseil.fr",
-         "title": "Atlas"},
-        {"type": "related_searches", "items": ["pac air eau prix", "pac air eau avis"]},
-        {"type": "featured_snippet", "url": "https://a.fr/pac", "domain": "a.fr", "title": "A"},
-    ]}]
+SERP_BRUTE = {"keyword": "pompe à chaleur air-eau", "serpEntries": [
+    {"url": "http://NODOMAIN", "domain": "NODOMAIN", "title": None, "position": 1, "type": "ai_overview"},
+    {"url": "https://a.fr/pac", "domain": "a.fr", "title": "A", "position": 2, "type": "organic",
+     "clicks": 120, "domainAuthority": 40},
+    {"url": "http://NODOMAIN", "domain": "NODOMAIN", "title": None, "position": 3, "type": "people_also_ask"},
+    {"url": "https://www.atlas-conseil.fr/pac", "domain": "atlas-conseil.fr", "title": "Atlas", "position": 4,
+     "type": "organic", "clicks": 50, "domainAuthority": 30},
+    {"url": "https://a.fr/pac", "domain": "a.fr", "title": "A", "position": 5, "type": "organic"},  # lien annexe
+    {"url": "http://NODOMAIN", "domain": "NODOMAIN", "title": "Images", "position": 6, "type": "images"},
+]}
+
+QUESTIONS = ["Quel est le prix d'une pompe à chaleur air-eau ?", "Quelle aide pour une pompe à chaleur ?",
+             "Quel bruit fait une pompe à chaleur ?"]
 
 
 class TestLectureHtml(unittest.TestCase):
@@ -173,19 +169,22 @@ class TestTexte(unittest.TestCase):
 class TestSerp(unittest.TestCase):
     def test_lire_serp(self):
         s = S.lire_serp(SERP_BRUTE)
-        self.assertEqual([o["rang"] for o in s["organique"]], [1, 2])
-        self.assertEqual(len(s["questions"]), 3)
-        self.assertEqual(s["recherches_associees"], ["pac air eau prix", "pac air eau avis"])
+        self.assertEqual([(o["rang"], o["domaine"]) for o in s["organique"]], [(1, "a.fr"), (2, "atlas-conseil.fr")])
+        self.assertEqual((s["organique"][0]["autorite"], s["organique"][0]["clics"]), (40, 120))
+        self.assertEqual(s["source"], "Ubersuggest")
         self.assertTrue(s["ai_overview"]["present"])
-        self.assertEqual([x["url"] for x in s["ai_overview"]["sources"]],
-                         ["https://atlas-conseil.fr/pac", "https://www.ademe.fr/pac"])   # dédoublonnées
-        self.assertTrue(s["ai_overview"]["extrait"].startswith("Une **pompe"))
-        self.assertEqual(s["extrait_optimise"]["domaine"], "a.fr")
-        self.assertIn("people_also_ask", s["features"])
+        self.assertFalse(s["ai_overview"]["sources_mesurees"])     # présent, mais sources non renvoyées
+        self.assertTrue(s["paa_presentes"])
+        self.assertEqual(s["features"], ["ai_overview", "people_also_ask", "images"])
 
     def test_serp_vide(self):
-        s = S.lire_serp([])
-        self.assertEqual((s["organique"], s["ai_overview"]["present"]), ([], False))
+        s = S.lire_serp({})
+        self.assertEqual((s["organique"], s["ai_overview"]["present"], s["paa_presentes"]), ([], False, False))
+
+    def test_questions_de_l_autocompletion(self):
+        brut = {"keywords": {"pac": {"suggestions": ["pac prix"], "questions": ["comment marche une pac", "pac ou poêle"]},
+                             "pac air eau": {"questions": ["comment marche une pac"]}}}
+        self.assertEqual(S.lire_questions(json.dumps(brut)), ["comment marche une pac", "pac ou poêle"])
 
 
 class TestAgregation(unittest.TestCase):
@@ -244,6 +243,7 @@ class TestAgregation(unittest.TestCase):
                                                           "Entretien"], mots_par_section=300)]
         client = page_concurrente("https://www.atlas-conseil.fr/pac", 2, ["Prix d'une pompe à chaleur air-eau"])
         serp = S.lire_serp(SERP_BRUTE)
+        serp["questions"] = QUESTIONS
         r = S.construire("pompe à chaleur air-eau", "France", "fr", serp, pages, client, "2026-09-29",
                          [{"url": "https://b.fr", "raison": "HTTP 403"}])
         self.assertEqual(r["structure"]["pages_lues"], 2)
@@ -253,7 +253,7 @@ class TestAgregation(unittest.TestCase):
         self.assertFalse(q["Quel bruit fait une pompe à chaleur ?"])
         c = r["client"]
         self.assertEqual(c["position"], 2)
-        self.assertTrue(c["cite_par_ai_overview"])
+        self.assertIsNone(c["cite_par_ai_overview"])            # Ubersuggest ne renvoie pas les sources
         self.assertEqual([x["sujet"] for x in c["sujets_manquants"]], ["Les aides"])
         self.assertIn("Quelle aide pour une pompe à chaleur ?", c["questions_non_traitees"])
         self.assertNotIn("Quel est le prix d'une pompe à chaleur air-eau ?", c["questions_non_traitees"])
@@ -261,7 +261,8 @@ class TestAgregation(unittest.TestCase):
         md = S.markdown(r)
         for attendu in ("# SERP — « pompe à chaleur air-eau »", "**Fourchette cible**", "## Sujets récurrents",
                         "| Quel bruit fait une pompe à chaleur ? | PAA | **non** |", "## Page du client face au top",
-                        "https://b.fr (HTTP 403)", "- H2 Les aides"):
+                        "https://b.fr (HTTP 403)", "- H2 Les aides", "| AI Overview | oui · sources non renvoyées |",
+                        "| Citée par l'AI Overview | non mesuré |"):
             self.assertIn(attendu, md)
         self.assertIn("## Source : https://a.fr/pac", S.contenus(r, pages))
 
@@ -299,7 +300,7 @@ class TestEntitesEtMedias(unittest.TestCase):
         self.assertIn("Semrush", {x["entite"] for x in en["isolees"]})
 
 
-class TestReplisSansDataForSEO(unittest.TestCase):
+class TestReplisHorsConnexion(unittest.TestCase):
     def test_serp_firecrawl(self):
         brut = {"success": True, "data": {"web": [
             {"url": "https://b.fr/x", "title": "B", "description": "d", "position": 2},
@@ -316,7 +317,7 @@ class TestReplisSansDataForSEO(unittest.TestCase):
         md = S.markdown(r)
         self.assertIn("| AI Overview | non mesuré", md)
         self.assertIn("SERP Firecrawl", md)
-        self.assertTrue(S.lire_serp([])["ai_overview"]["mesure"])
+        self.assertTrue(S.lire_serp({})["ai_overview"]["mesure"])
 
     def test_questions_et_pages_relevees(self):
         self.assertEqual(S.lire_questions("# PAA du 5/10\n- Qu'est-ce que le GEO ?\n\nCombien coûte un audit ?\n"),
@@ -327,8 +328,8 @@ class TestReplisSansDataForSEO(unittest.TestCase):
                                                                              "title": "B"}}},
                                       {"url": "https://vide.fr"}])
         self.assertEqual(sorted(relevees), ["https://a.fr/pac", "https://b.fr/pac"])
-        page, raison, cout = S.lire_page("https://b.fr/pac", "fr", False, relevees)
-        self.assertEqual((raison, cout, page["titre"]), (None, 0.0, "Titre"))
+        page, raison = S.lire_page("https://b.fr/pac", "fr", relevees)
+        self.assertEqual((raison, page["titre"]), (None, "Titre"))
         self.assertGreater(page["mots"], 200)
 
     def test_candidats_maillage(self):
@@ -365,15 +366,20 @@ class TestCommande(DossierIsole):
         self.assertIn("## Maillage interne — candidates du sitemap", rapport)
 
     def test_hors_ligne_depuis_une_serp_enregistree(self):
-        # Sans résultat organique, aucune page n'est téléchargée : le test reste hors réseau.
-        serp = [{"item_types": ["people_also_ask"], "items": [
-            {"type": "people_also_ask", "items": [{"title": "Quel prix pour une PAC ?"}]}]}]
-        f = self.ecrire("serp.json", json.dumps({"tasks": [{"result": serp}]}))
+        # Réponses du connecteur Ubersuggest enregistrées par une routine. Sans résultat organique,
+        # aucune page n'est téléchargée : le test reste hors réseau.
+        f = self.ecrire("serp.json", json.dumps({"serpEntries": [
+            {"url": "http://NODOMAIN", "domain": "NODOMAIN", "position": 1, "type": "ai_overview"}]}))
+        q = self.ecrire("suggestions.json", json.dumps({"keywords": {"pompe à chaleur": {
+            "questions": ["Quel prix pour une PAC ?"]}}}))
         r = lancer("serp_concurrents.py", "--mot", "pompe à chaleur", "--langue", "fr", "--pays", "FR",
-                   "--serp-json", str(f), "--json", cwd=self.dossier)
+                   "--serp-json", str(f), "--questions", str(q), "--json", cwd=self.dossier)
         self.assertEqual(r.returncode, 0, r.stderr)
         d = json.loads(r.stdout)
-        self.assertEqual(d["questions"][0]["question"], "Quel prix pour une PAC ?")
+        self.assertEqual((d["questions"][0]["question"], d["questions"][0]["source"]),
+                         ("Quel prix pour une PAC ?", "autocomplétion"))
+        self.assertTrue(d["serp"]["ai_overview"]["present"])
+        self.assertEqual(d["rapports_ubersuggest"], 0)
         self.assertIsNone(d["longueur"])
         fichiers = sorted(p.name for p in (self.dossier / "recherche").iterdir())
         self.assertEqual(len(fichiers), 2)

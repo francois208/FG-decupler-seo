@@ -68,7 +68,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/share_of_model.py" --prompts recherche/pr
 | Gemini | `GEMINI_API_KEY` | API + Google Search — automatique, le plus proche des AI Overviews |
 | Claude | `ANTHROPIC_API_KEY` | API + recherche web — automatique |
 | Perplexity | `PERPLEXITY_API_KEY` | API Sonar — automatique, facultatif |
-| Google AI Overviews | — | DataForSEO (feature AIO) ou relevé manuel |
+| Google AI Overviews | — | Ubersuggest AI Search Visibility (`brand_prompts`, `provider: google_aio`) ou relevé manuel |
 
 Deux clés suffisent (OpenAI et Gemini) : elles couvrent les deux moteurs
 qui pèsent le plus. Un moteur sans clé est ignoré, sans erreur.

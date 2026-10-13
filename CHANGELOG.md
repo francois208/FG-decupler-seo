@@ -1,5 +1,42 @@
 # Journal des versions
 
+## 3.11.0
+
+### Modifié
+
+- **Toute la donnée marché passe par Ubersuggest.** DataForSEO, Ahrefs et
+  Semrush sont retirés (`.mcp.json`, `.env.example`, `doctor.py`, skills,
+  SOP, docs). Ubersuggest couvre volumes, difficulté, intention, SERP,
+  concurrents, backlinks, suivi de positions et visibilité IA (ChatGPT,
+  Gemini, AI Overviews).
+- **`scripts/ubersuggest.py`** (nouveau) : client du serveur MCP officiel
+  d'Ubersuggest, sans dépendance — Ubersuggest n'a pas d'API à clé.
+  `connexion` (OAuth une fois, jeton dans `.seo-decupler/ubersuggest.json`),
+  `statut` (rapports restants aujourd'hui), `outils`, `appel`. Le jeton de
+  renouvellement change à chaque usage : il est réécrit à chaque rotation,
+  et une routine cloud passe par le connecteur claude.ai, pas par un secret.
+- **`demande.py`** : `volumes` (keyword_overview, KD, intention et tendance
+  sur un an), `idees` (match_keywords ; `--mode proches` :
+  keyword_suggestions), `serp` (présence d'AI Overview et de PAA, questions
+  de l'autocomplétion). `--loc-id` remplace `--lieu`. Le quota consommé
+  (rapports) remplace le coût en dollars.
+- **`serp_concurrents.py`** : SERP Ubersuggest (autorité et clics estimés par
+  résultat, features), questions de `google_suggestions`. `--serp-json` lit
+  une réponse de `serp_analysis` enregistrée par le connecteur ;
+  `--questions` accepte la réponse de `google_suggestions`. Le texte et les
+  sources de l'AI Overview ne sont pas renvoyés par Ubersuggest : le
+  rapport dit « sources non renvoyées » et renvoie au navigateur.
+  `--repli-dataforseo` disparaît : une page illisible se relève avec
+  Firecrawl (`--pages-json`).
+- **`liens.py`** : tous les domaines référents (un lien chacun, paginé avec
+  une pause), spam détecté par le vocabulaire des réseaux de liens
+  (domaine, titre, ancre) puis par le score Ubersuggest — relevé réel : ce
+  score note 7 des pages PBN. `resume` passe par `domain_overview`, qui
+  échappe au bridage de débit des backlinks.
+- **`cartographie.py mensuel --volumes`** rafraîchit aussi la colonne `kd`.
+- Routine de contenu : la SERP vient du connecteur Ubersuggest, enregistrée
+  puis passée à `serp_concurrents.py`.
+
 ## 3.10.1
 
 - **Indexation au déploiement**, comme l'indexation instantanée de Rank Math : le

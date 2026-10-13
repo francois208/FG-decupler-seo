@@ -17,7 +17,7 @@ Accès aux données : voir « Récupérer les données » dans `../SKILL.md`.
 1. Partir des requêtes réelles : elles portent le vocabulaire exact des acheteurs.
 2. Grouper par intention, puis ordonner les groupes par volume d'impressions — cet ordre devient le plan Hn.
 3. Extraire les formulations interrogatives : elles deviennent des H3 ou des entrées de FAQ.
-4. Compléter avec la SERP (via DataForSEO ou Firecrawl) uniquement pour ce que GSC ne peut pas dire : ce que couvrent les concurrents.
+4. Compléter avec la SERP (via Ubersuggest ou Firecrawl) uniquement pour ce que GSC ne peut pas dire : ce que couvrent les concurrents.
 
 ## Sortie attendue
 
@@ -39,7 +39,7 @@ qu'un outil de volume suggère.
    des entrées de FAQ.
 4. Relève le VOCABULAIRE EXACT des requêtes. C'est le langage de mes
    acheteurs : impose-le dans le brief, ne le reformule pas en jargon.
-5. Complète avec la SERP (DataForSEO ou Firecrawl) UNIQUEMENT pour ce
+5. Complète avec la SERP (Ubersuggest ou Firecrawl) UNIQUEMENT pour ce
    que Search Console ne peut pas dire : ce que couvrent les
    concurrents et que je ne couvre pas.
 

@@ -370,5 +370,23 @@ class TestRapportJson(unittest.TestCase):
         self.assertEqual(rapport.section_cartographie(None), [])
 
 
+class TestVolumesUbersuggest(unittest.TestCase):
+    def test_volume_et_kd_par_mot_cle(self):
+        class Faux:
+            appels = []
+
+            def appel(self, outil, arguments):
+                self.appels.append(arguments)
+                return {"search_volume": 720, "seo_difficulty": 10} if "tombe" in arguments["keyword"] else {}
+        lignes = [{"mot_cle_principal": "Fleurs céramique tombe", "langue": "fr", "volume": "", "kd": ""},
+                  {"mot_cle_principal": "fleurs céramique tombe", "langue": "fr", "volume": "", "kd": ""},
+                  {"mot_cle_principal": "", "langue": "fr"},
+                  {"mot_cle_principal": "inconnu", "langue": "fr", "volume": "", "kd": ""}]
+        faux = Faux()
+        self.assertEqual(carto.rafraichir_volumes(lignes, faux), 2)           # un rapport par mot-clé distinct
+        self.assertEqual((lignes[0]["volume"], lignes[0]["kd"], lignes[1]["volume"]), ("720", "10", "720"))
+        self.assertEqual((lignes[3]["volume"], lignes[3]["kd"]), ("0", ""))
+
+
 if __name__ == "__main__":
     unittest.main()

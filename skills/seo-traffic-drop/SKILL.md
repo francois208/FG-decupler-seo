@@ -69,8 +69,8 @@ Si oui, votre position 3 vaut désormais ce que valait une position 8.
 2. **Contenu modifié** — quelqu'un a-t-il réécrit ou raccourci la page ?
    Comparez avec l'Internet Archive. Une refonte de design qui supprime du
    texte est une cause extrêmement fréquente et invisible.
-3. **Perte de liens** — des backlinks ont-ils disparu ? (Ahrefs, liens
-   perdus sur la période)
+3. **Perte de liens** — des backlinks ont-ils disparu ? (Ubersuggest
+   `linking_domains` avec `filter_by: "lost"`, 60 derniers jours)
 4. **Concurrence** — qui a pris votre place ? Qu'a-t-il de plus ?
 5. **Mise à jour Google** — si la date colle et que rien d'autre n'explique.
 

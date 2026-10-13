@@ -12,13 +12,13 @@
 
 ## Étapes
 
-1. La SERP en direct : top 10, « Autres questions posées », AI Overview et ses sources (`serp_concurrents.py`, avec DataForSEO). Sans DataForSEO, repli sur Firecrawl, puis sur Ubersuggest.
+1. La SERP en direct : top 10, présence d'« Autres questions posées » et d'un AI Overview, questions de l'autocomplétion (`serp_concurrents.py`, avec Ubersuggest). Les sources de l'AI Overview se relèvent dans le navigateur. Sans Ubersuggest, repli sur Firecrawl.
 2. Le top 5 lu page par page : longueur, plan Hn, tableaux, FAQ, schémas, entités citées.
 3. La matrice de gap : ce que le top traite, et ce que personne ne traite. C'est là qu'est ton angle.
 4. Contrôle de cannibalisation : si une page du site vise déjà cette intention, on l'optimise au lieu d'en créer une autre.
 5. Le brief en 18 sections : intention, plan chiffré, H1, réponse directe de 40 à 60 mots, FAQ, prompts IA et fan-out, données structurées, sources E-E-A-T, checklist GEO, liens internes tirés du sitemap.
 
-**MCP nécessaires** : DataForSEO (ou Firecrawl, ou Ubersuggest). Search Console si la page existe déjà.
+**MCP nécessaires** : Ubersuggest (ou Firecrawl). Search Console si la page existe déjà.
 
 **Livrable** : Le brief en 18 sections et `recherche/serp-<mot-clé>-<date>.md`, avec l'origine de chaque chiffre.
 

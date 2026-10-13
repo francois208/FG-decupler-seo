@@ -16,7 +16,7 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
 SCRIPTS = RACINE / "scripts"
-VARIABLES_DU_DISPOSITIF = ("SEO_", "GSC_", "GA4_", "WP_", "WEBFLOW_", "INDEXNOW_")
+VARIABLES_DU_DISPOSITIF = ("SEO_", "GSC_", "GA4_", "WP_", "WEBFLOW_", "INDEXNOW_", "UBERSUGGEST_")
 
 
 def environnement_propre(**extra: str) -> dict:

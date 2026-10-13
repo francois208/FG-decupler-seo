@@ -8,7 +8,7 @@ Une méthode qui audite, corrige, rédige, publie — puis **mesure si ça a mar
 [![Licence MIT](https://img.shields.io/badge/licence-MIT-yellow)](LICENSE)
 [![Français](https://img.shields.io/badge/langue-fran%C3%A7ais-blue)](#)
 
-54 skills · 15 agents · 37 scripts Python (le cœur sans aucune dépendance) · 13 MCP préconfigurés · 17 SOP · 408 tests
+54 skills · 15 agents · 38 scripts Python (le cœur sans aucune dépendance) · 9 MCP préconfigurés · 17 SOP · 419 tests
 
 > **Par où commencer ?** [Prise en main pas à pas](docs/PRISE-EN-MAIN.md) : le plugin en
 > 15 minutes, votre premier projet en 1 heure, ou rejoindre un projet comme prestataire, avec ce que
@@ -120,9 +120,9 @@ Votre temps : **20 minutes le mercredi**, sur l'onglet du mois de la page de sui
 
 | Étape | Outil | Ce qui en sort |
 |---|---|---|
-| Idées | `demande.py idees --lexique` (DataForSEO, sans connecteur) | la demande réelle : volume, difficulté, intention, tendance |
+| Idées | `demande.py idees --lexique` (Ubersuggest, sans connecteur) | la demande réelle : volume, difficulté, intention, tendance |
 | Priorités | `opportunites.py --calendrier` | actions classées par valeur pour **ce** client, funnel, calendrier éditorial |
-| Brief | `serp_concurrents.py` + `seo-benchmark` + `seo-brief` | top 5 lu et mesuré (longueur cible, sujets récurrents, questions non traitées, AI Overview), puis brief en 18 sections : gap face au top 5, plan chiffré, réponse directe, H1, intro et FAQ rédigés, prompts IA et fan-out, schémas, checklist GEO ; repli Firecrawl sans DataForSEO |
+| Brief | `serp_concurrents.py` + `seo-benchmark` + `seo-brief` | top 5 lu et mesuré (longueur cible, sujets récurrents, questions non traitées, AI Overview), puis brief en 18 sections : gap face au top 5, plan chiffré, réponse directe, H1, intro et FAQ rédigés, prompts IA et fan-out, schémas, checklist GEO ; repli Firecrawl sans Ubersuggest |
 | Rédaction | `style_maison.py` + `seo-redaction` + `humanisation.py` + `controle_contenu.py` | texte écrit dans le style mesuré du client, débarrassé des tics d'écriture IA, relu, contrôlé, bloqué s'il contient une promesse ou un chiffre non sourcé |
 | Publication | `wp.py` (WordPress) + `templates/wordpress/` | extensions prêtes (métas SEO par l'API pour Yoast, Rank Math, SEOPress ; nettoyage après piratage ; entité JSON-LD), brouillon par défaut, révision à valider pour une page en ligne, meta relue puis journalisée, carte de contenu et maillage |
 | Indexation | `indexation.py annoncer`, puis `suivre` | IndexNow + sitemaps resoumis après chaque mise en ligne, contrôle à J+3, liste des URL à demander ; jamais l'Indexing API hors de son usage |
@@ -192,8 +192,8 @@ disent ce qui manque.
 | | Outils | Coût |
 |---|---|---|
 | **Le socle** | Search Console · GA4 · Chrome DevTools | gratuit |
-| **La donnée marché** | Firecrawl · DataForSEO · Ubersuggest | gratuit à quelques € |
-| **La production** | WordPress · Webflow · Notion · Semrush · Ahrefs | variable |
+| **La donnée marché** | Ubersuggest · Firecrawl | abonnement Ubersuggest (ou lifetime), Firecrawl gratuit |
+| **La production** | WordPress · Webflow · Notion | gratuit |
 | **La visibilité IA** | clés OpenAI et Gemini (Claude et Perplexity en option) · Reddit | quelques centimes par mesure |
 
 Search Console, GA4 et Chrome DevTools couvrent l'essentiel, et sont gratuits.

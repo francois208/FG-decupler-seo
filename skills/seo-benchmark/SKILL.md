@@ -30,7 +30,7 @@ page**, juste avant de l'écrire.
 
 1. **SERP**, pour le mot-clé principal, **dans chaque langue du projet**
    (`decupler-seo.config.yml` → `projet.langues`) : top 5 organique et
-   questions « Autres questions posées » (DataForSEO, Firecrawl, recherche web).
+   questions (Ubersuggest : `serp_concurrents.py` ; Firecrawl, recherche web).
 2. **Lire réellement les 3 meilleures pages** (Firecrawl) et relever :
    - angle et promesse, structure Hn, profondeur (étapes, coûts, délais)
    - données chiffrées, leur source et leur date
